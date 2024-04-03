@@ -218,7 +218,7 @@ const test = CronJob.from({
 });
 
 app.get("/", async (req, res) => {
-    res.send();
+    res.send("SUCCESS");
 });
 
 app.get("/session", async (req, res) => {
