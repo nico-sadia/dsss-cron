@@ -3,7 +3,6 @@ import { RecentlyPlayed } from "../lib/types";
 const RECENTLY_PLAYED_URL =
     "https://api.spotify.com/v1/me/player/recently-played";
 const PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
-const PLAYLIST_ID = "5lVq9kkR5cgq9ravHblz7g";
 
 const limit = 50;
 const after = new Date().setHours(new Date().getHours() - 2, 0, 0);
@@ -25,7 +24,8 @@ export const getRecentlyPlayed = async (accessToken: string) => {
 
 export const addTopPlayedTrack = async (
     accessToken: string,
-    trackURI: string
+    trackURI: string,
+    playlistID: string
 ) => {
     const payload = {
         method: "POST",
@@ -37,7 +37,7 @@ export const addTopPlayedTrack = async (
     };
 
     const response = await fetch(
-        PLAYLIST_URL + PLAYLIST_ID + "/tracks",
+        PLAYLIST_URL + playlistID + "/tracks",
         payload
     );
 

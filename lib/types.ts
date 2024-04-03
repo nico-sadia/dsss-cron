@@ -35,6 +35,7 @@ export type SessionData = {
     refresh_token: string;
     expires_at: number;
     user_id: string;
+    playlist_id: string;
 };
 
 export type CookieData = {};

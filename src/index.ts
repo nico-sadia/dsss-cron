@@ -7,7 +7,7 @@ import {
     addTopPlayedTrack,
     getRecentlyPlayed,
 } from "../services/SpotifyServices";
-import { CheckAccessToken, getRefreshToken } from "../services/AuthServices";
+import { CheckAccessToken } from "../services/AuthServices";
 import { formatToTrackDB } from "../utils/DBFormatter";
 import {
     getDBRecentlyPlayed,
@@ -149,6 +149,11 @@ const handleTopPlayedTrack = async () => {
     for (let i = 0; i < sessions.length; i++) {
         console.log("\nNEXT SESSION");
 
+        if (!sessions[i].sess.playlist_id) {
+            console.error("NO PLAYLIST TO SAVE TO GIVEN");
+            continue;
+        }
+
         //Get access token from DB or by refreshing
         let accessToken: string | undefined = await CheckAccessToken(
             sessions[i].sess.expires_at,
@@ -203,19 +208,40 @@ const handleTopPlayedTrack = async () => {
 
         //Sort the list of track counts
         trackListCount = trackListCount.sort((a, b) => b.count! - a.count!);
-        console.log(trackListCount[0]);
+
+        console.log("TOP PLAYED TRACKS:");
+        for (let i = 0; i < 3; i++) {
+            console.log(
+                `TRACK #${i}: ` +
+                    trackListCount[i].song_uri +
+                    " | " +
+                    trackListCount[i].count
+            );
+        }
+
+        try {
+            addTopPlayedTrack(
+                accessToken,
+                trackListCount[0].song_uri,
+                sessions[i].sess.playlist_id
+            );
+        } catch (error) {
+            console.error(error);
+        }
+        console.log("SUCCESS!");
     }
+    console.log("ADDING TOP TRACK PROCESS COMPLETE");
 };
 
-const handleRecentlyPlayedJob = CronJob.from({
+const RecentlyPlayedJob = CronJob.from({
     cronTime: "0 */2 * * *",
     onTick: async () => await handleRecentlyPlayed(),
     start: true,
 });
 
-const test = CronJob.from({
-    cronTime: "0 */2 * * *",
-    onTick: () => console.log("Test: " + new Date().getTime),
+const TopPlayedTrackJob = CronJob.from({
+    cronTime: "30 0 * * *",
+    onTick: async () => await handleTopPlayedTrack(),
     start: true,
 });
 
@@ -224,9 +250,17 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/add-recently-played", async (req, res) => {
-    console.log("CALLED");
     try {
         await handleRecentlyPlayed();
+        res.status(201).send("Success");
+    } catch (error) {
+        res.status(500).send("Error");
+    }
+});
+
+app.get("/add-top-track", async (req, res) => {
+    try {
+        await handleTopPlayedTrack();
         res.status(201).send("Success");
     } catch (error) {
         res.status(500).send("Error");
