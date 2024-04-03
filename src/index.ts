@@ -240,8 +240,8 @@ app.get("/test", async (req, res) => {
     res.send("hi");
 });
 
-app.listen(process.env.port, () => {
-    console.log(`Server is Fire at http://localhost:${process.env.port}`);
+app.listen(process.env.PORT, () => {
+    console.log(`Server is Fire at http://localhost:${process.env.PORT}`);
 });
 
 export { db };
