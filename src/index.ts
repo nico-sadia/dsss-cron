@@ -28,7 +28,7 @@ const cn = {
     port: 5432,
     database: "spotify_tracker_db",
     user: "postgres",
-    password: "Yoneismid17!",
+    password: process.env.DB_PASSWORD,
 };
 
 const db = pgp(cn);
