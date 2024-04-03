@@ -36,9 +36,12 @@ const handleRecentlyPlayed = async () => {
     console.log("\n\n\n");
     console.log("NEW HANDLE RECENT PLAYED JOB AT: " + new Date());
 
-    const sessions: Session[] = await getDBSessions();
+    const sessions: Session[] | null = await getDBSessions();
 
-    if (!sessions) return;
+    if (!sessions) {
+        console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");
+        return;
+    }
 
     for (let i = 0; i < sessions.length; i++) {
         console.log("\nNEXT SESSION");
@@ -139,7 +142,7 @@ const handleTopPlayedTrack = async () => {
     console.log("\n\n\n");
     console.log("NEW TOP PLAYED TRACK JOB AT: " + new Date(Date.now()));
 
-    const sessions: Session[] = await getDBSessions();
+    const sessions: Session[] | null = await getDBSessions();
 
     if (!sessions) return;
 

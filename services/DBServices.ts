@@ -1,7 +1,12 @@
 import { db } from "../src";
 
 export const getDBSessions = async () => {
-    return await db.manyOrNone("SELECT sid, sess FROM session");
+    try {
+        return await db.manyOrNone("SELECT sid, sess FROM session");
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 };
 
 export const getDBRecentlyPlayed = async (userID: string) => {
