@@ -220,24 +220,14 @@ app.get("/", async (req, res) => {
     res.send("SUCCESS");
 });
 
-app.get("/session", async (req, res) => {
-    const response = await fetch("http://localhost:5173/auth/test-session", {
-        credentials: "include",
-    });
-    const data = await response.text();
-    res.send(data);
-});
-
-app.get("/refresh-token", async (req, res) => {
-    const result = await getRefreshToken(
-        "AQAWRndelsSYjhJdCLqfMWPBwVKmhJ-RdNrJEinoT5KDl9muu2NNRS-P2VildJkFfdp-1wcjjBWqvhrtOpk0DeyiJs3sQzxFhDSD58OXqOQywcsrtHgYbeunjXs64ef1et8"
-    );
-    res.send(result);
-});
-
-app.get("/test", async (req, res) => {
-    await handleTopPlayedTrack();
-    res.send("hi");
+app.get("/add-recently-played", async (req, res) => {
+    console.log("CALLED");
+    try {
+        await handleRecentlyPlayed();
+        res.status(201).send("Success");
+    } catch (error) {
+        res.status(500).send("Error");
+    }
 });
 
 app.listen(process.env.PORT, () => {
