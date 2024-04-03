@@ -18,7 +18,6 @@ import {
 dotenv.config();
 
 const app: Application = express();
-const port = process.env.port;
 
 app.use(express.json());
 
@@ -241,8 +240,8 @@ app.get("/test", async (req, res) => {
     res.send("hi");
 });
 
-app.listen(port, () => {
-    console.log(`Server is Fire at http://localhost:${port}`);
+app.listen(process.env.port, () => {
+    console.log(`Server is Fire at http://localhost:${process.env.port}`);
 });
 
 export { db };
