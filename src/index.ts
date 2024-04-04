@@ -176,7 +176,7 @@ const handleTopPlayedTrack = async () => {
 
         const dbRecentlyPlayed = await getDBRecentlyPlayed(
             sessions[i].sess.user_id,
-            yesterday
+            new Date()
         );
 
         if (dbRecentlyPlayed.length === 0) {
