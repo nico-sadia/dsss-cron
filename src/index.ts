@@ -23,10 +23,10 @@ app.use(express.json());
 
 const pgp = pgPromise();
 const cn = {
-    host: "localhost",
+    host: "aws-0-eu-west-2.pooler.supabase.com",
     port: 5432,
-    database: "spotify_tracker_db",
-    user: "postgres",
+    database: "postgres",
+    user: "postgres.npajxuxawhrmlgiocfnz",
     password: process.env.DB_PASSWORD,
 };
 
@@ -84,9 +84,9 @@ const handleRecentlyPlayed = async () => {
         //Get recently played tracks of current user from DB
         //Convert them to only the time they were played at for comparison
         const dbRecentlyPlayed = await getDBRecentlyPlayed(
-            sessions[i].sess.user_id
+            sessions[i].sess.user_id,
+            new Date()
         );
-
         if (dbRecentlyPlayed.length === 0) {
             console.log("NO SONGS IN DB");
             const queryStrRecentlyPlayed = recentlyPlayed
@@ -170,8 +170,13 @@ const handleTopPlayedTrack = async () => {
 
         console.log("ACCESS TOKEN SUCCESS");
 
+        const yesterday = new Date(
+            new Date().setDate(new Date().getDate() - 1)
+        );
+
         const dbRecentlyPlayed = await getDBRecentlyPlayed(
-            sessions[i].sess.user_id
+            sessions[i].sess.user_id,
+            yesterday
         );
 
         if (dbRecentlyPlayed.length === 0) {
@@ -240,7 +245,7 @@ const RecentlyPlayedJob = CronJob.from({
 });
 
 const TopPlayedTrackJob = CronJob.from({
-    cronTime: "30 0 * * *",
+    cronTime: "10 0 * * *",
     onTick: async () => await handleTopPlayedTrack(),
     start: true,
 });

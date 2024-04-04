@@ -4,15 +4,16 @@ export const getDBSessions = async () => {
     try {
         return await db.manyOrNone("SELECT sid, sess FROM session");
     } catch (error) {
+        console.log("DB ERROR");
         console.error(error);
         return null;
     }
 };
 
-export const getDBRecentlyPlayed = async (userID: string) => {
+export const getDBRecentlyPlayed = async (userID: string, date: Date) => {
     return await db.each(
         "SELECT song_uri, user_id, played_at FROM listen_history WHERE user_id = $1 AND date(played_at) = $2",
-        [userID, new Date()],
+        [userID, date],
         (row) => {
             row.played_at = row.played_at.toISOString();
         }
