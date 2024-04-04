@@ -1,4 +1,5 @@
-import { db } from "../src";
+import { type Session } from "../lib/types";
+import { db } from "../db/database";
 
 export const getDBSessions = async () => {
     try {
@@ -26,4 +27,25 @@ export const insertRecentlyPlayedIntoDB = async (values: string) => {
             values +
             ";"
     );
+};
+
+export const updateDBAccessToken = async (
+    accessToken: string,
+    session: Session
+) => {
+    console.log("UPDATING ACCESS TOKEN");
+    try {
+        await db.multiResult(
+            "UPDATE session SET sess = jsonb_set(sess, '{access_token}', $1, false) WHERE sid = $2; UPDATE session SET sess = jsonb_set(sess, '{expires_at}', to_jsonb($3), false) WHERE sid = $4",
+            [
+                `"${accessToken}"`,
+                session.sid,
+                Date.now() + 3600 * 1000,
+                session.sid,
+            ]
+        );
+        console.log("UPDATING DB SUCCESS");
+    } catch (error) {
+        console.error(error);
+    }
 };
