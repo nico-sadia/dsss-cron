@@ -12,6 +12,8 @@ export const getDBSessions = async () => {
 };
 
 export const getDBRecentlyPlayed = async (userID: string, date: Date) => {
+    console.log("DB DATE: " + date);
+
     return await db.each(
         "SELECT song_uri, user_id, played_at FROM listen_history WHERE user_id = $1 AND date(played_at AT TIME ZONE 'Europe/London') = $2",
         [userID, date],
