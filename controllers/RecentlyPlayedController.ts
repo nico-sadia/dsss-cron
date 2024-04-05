@@ -53,13 +53,12 @@ const handleRecentlyPlayed = async () => {
         }
 
         console.log("TRACKS FOUND IN RECENTLY PLAYED: " + data.items.length);
-
         recentlyPlayed = data.items.map((track) => {
             //Format the data to be written to DB
             return formatToTrackDB(
                 track.track.uri,
                 sessions[i].sess.user_id,
-                track.played_at
+                new Date(track.played_at).toString()
             );
         });
 

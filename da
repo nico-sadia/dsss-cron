@@ -1,0 +1,454 @@
+[33mcommit 3d515eb028eb30034bb535292f95ba480deb65da[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Nico Sadia <137914811+BHASVIC-NicoSadia22@users.noreply.github.com>
+Date:   Thu Apr 4 22:44:40 2024 +0100
+
+    better logging and project structure
+
+[1mdiff --git a/controllers/RecentlyPlayedController.ts b/controllers/RecentlyPlayedController.ts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..c139bf9[m
+[1m--- /dev/null[m
+[1m+++ b/controllers/RecentlyPlayedController.ts[m
+[36m@@ -0,0 +1,123 @@[m
+[32m+[m[32mimport { type Session, type TrackDB } from "../lib/types";[m
+[32m+[m[32mimport { formatToTrackDB } from "../utils/DBFormatter";[m
+[32m+[m[32mimport {[m
+[32m+[m[32m    getDBSessions,[m
+[32m+[m[32m    getDBRecentlyPlayed,[m
+[32m+[m[32m    insertRecentlyPlayedIntoDB,[m
+[32m+[m[32m} from "../services/DBServices";[m
+[32m+[m[32mimport { checkAccessToken } from "../services/AuthServices";[m
+[32m+[m[32mimport { getRecentlyPlayed } from "../services/SpotifyServices";[m
+[32m+[m
+[32m+[m[32mconst handleRecentlyPlayed = async () => {[m
+[32m+[m[32m    console.log("\n");[m
+[32m+[m[32m    console.log([m
+[32m+[m[32m        "-------------------------------------------------------------------"[m
+[32m+[m[32m    );[m
+[32m+[m[32m    console.log("\n");[m
+[32m+[m[32m    console.log("HANDLE RECENT PLAYED JOB AT: " + new Date());[m
+[32m+[m
+[32m+[m[32m    const sessions: Session[] | null = await getDBSessions();[m
+[32m+[m
+[32m+[m[32m    if (!sessions) {[m
+[32m+[m[32m        console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    for (let i = 0; i < sessions.length; i++) {[m
+[32m+[m[32m        console.log("\nNEXT SESSION: " + sessions[i].sess.user_id);[m
+[32m+[m
+[32m+[m[32m        let recentlyPlayed: TrackDB[] = [];[m
+[32m+[m
+[32m+[m[32m        //Get access token from DB or by refreshing[m
+[32m+[m[32m        let accessToken: string | undefined = await checkAccessToken([m
+[32m+[m[32m            sessions[i].sess.expires_at,[m
+[32m+[m[32m            sessions[i].sess.refresh_token,[m
+[32m+[m[32m            sessions[i].sess.access_token,[m
+[32m+[m[32m            sessions[i][m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        //if access token present and viable, fetch user recently played and push to array[m
+[32m+[m[32m        if (!accessToken) {[m
+[32m+[m[32m            console.log("ERROR: ACCESS TOKEN FAILURE");[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("ACCESS TOKEN SUCCESS");[m
+[32m+[m
+[32m+[m[32m        //Get user recently played using access token[m
+[32m+[m[32m        const data = await getRecentlyPlayed(accessToken);[m
+[32m+[m
+[32m+[m[32m        if (data.items.length === 0) {[m
+[32m+[m[32m            console.log("CLIENT ERROR: NO TRACKS IN RECENTLY PLAYED");[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("TRACKS FOUND IN RECENTLY PLAYED: " + data.items.length);[m
+[32m+[m
+[32m+[m[32m        recentlyPlayed = data.items.map((track) => {[m
+[32m+[m[32m            //Format the data to be written to DB[m
+[32m+[m[32m            return formatToTrackDB([m
+[32m+[m[32m                track.track.uri,[m
+[32m+[m[32m                sessions[i].sess.user_id,[m
+[32m+[m[32m                track.played_at[m
+[32m+[m[32m            );[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        //Get recently played tracks of current user from DB[m
+[32m+[m[32m        //Convert them to only the time they were played at for comparison[m
+[32m+[m[32m        const dbRecentlyPlayed = await getDBRecentlyPlayed([m
+[32m+[m[32m            sessions[i].sess.user_id,[m
+[32m+[m[32m            new Date()[m
+[32m+[m[32m        );[m
+[32m+[m[32m        if (dbRecentlyPlayed.length === 0) {[m
+[32m+[m[32m            console.log("CLIENT ERROR: NO SONGS IN DB");[m
+[32m+[m[32m            console.log("WRITING ALL TRACKS FOUND IN API TO DB");[m
+[32m+[m[32m            const queryStrRecentlyPlayed = recentlyPlayed[m
+[32m+[m[32m                .map((track) => {[m
+[32m+[m[32m                    return `('${track.song_uri}', '${track.user_id}', '${track.played_at}')`;[m
+[32m+[m[32m                })[m
+[32m+[m[32m                .join();[m
+[32m+[m[32m            try {[m
+[32m+[m[32m                insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);[m
+[32m+[m[32m            } catch (error) {[m
+[32m+[m[32m                console.log(error);[m
+[32m+[m[32m            }[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("TRACKS FOUND IN DB: " + dbRecentlyPlayed.length);[m
+[32m+[m[32m        const filteredRecentlyPlayed = recentlyPlayed.filter([m
+[32m+[m[32m            (rowOne) =>[m
+[32m+[m[32m                !dbRecentlyPlayed.some([m
+[32m+[m[32m                    (rowTwo) => rowTwo.played_at === rowOne.played_at[m
+[32m+[m[32m                )[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        if (filteredRecentlyPlayed.length === 0) {[m
+[32m+[m[32m            console.log("NO SONGS TO WRITE TO DB");[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            console.log("NEW SONGS FOUND TO WRITE TO DB");[m
+[32m+[m[32m            console.log("LENGTH OF API TRACKS: " + recentlyPlayed.length);[m
+[32m+[m[32m            console.log([m
+[32m+[m[32m                "LENGTH OF FILTERED TRACKS: " + filteredRecentlyPlayed.length[m
+[32m+[m[32m            );[m
+[32m+[m[32m            const queryStrRecentlyPlayed = filteredRecentlyPlayed[m
+[32m+[m[32m                .map((track) => {[m
+[32m+[m[32m                    return `('${track.song_uri}', '${track.user_id}', '${track.played_at}')`;[m
+[32m+[m[32m                })[m
+[32m+[m[32m                .join();[m
+[32m+[m
+[32m+[m[32m            try {[m
+[32m+[m[32m                insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);[m
+[32m+[m[32m                console.log("WRITING NEW SONGS TO DB SUCCESS!");[m
+[32m+[m[32m            } catch (error) {[m
+[32m+[m[32m                console.log(error);[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            console.log("\n");[m
+[32m+[m[32m        }[m
+[32m+[m[32m        console.log("SESSION FINISHED");[m
+[32m+[m[32m    }[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mexport { handleRecentlyPlayed };[m
+[1mdiff --git a/controllers/TopPlayedController.ts b/controllers/TopPlayedController.ts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6c13c73[m
+[1m--- /dev/null[m
+[1m+++ b/controllers/TopPlayedController.ts[m
+[36m@@ -0,0 +1,115 @@[m
+[32m+[m[32mimport { type Session, type TrackDB } from "../lib/types";[m
+[32m+[m[32mimport { getDBSessions, getDBRecentlyPlayed } from "../services/DBServices";[m
+[32m+[m[32mimport { checkAccessToken } from "../services/AuthServices";[m
+[32m+[m[32mimport { addTopPlayedTrack } from "../services/SpotifyServices";[m
+[32m+[m
+[32m+[m[32mconst handleTopPlayed = async () => {[m
+[32m+[m[32m    console.log("\n");[m
+[32m+[m[32m    console.log([m
+[32m+[m[32m        "-------------------------------------------------------------------"[m
+[32m+[m[32m    );[m
+[32m+[m[32m    console.log("\n");[m
+[32m+[m[32m    console.log("TOP PLAYED TRACK JOB AT: " + new Date(Date.now()));[m
+[32m+[m
+[32m+[m[32m    const sessions: Session[] | null = await getDBSessions();[m
+[32m+[m
+[32m+[m[32m    if (!sessions) {[m
+[32m+[m[32m        console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");[m
+[32m+[m[32m        return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    for (let i = 0; i < sessions.length; i++) {[m
+[32m+[m[32m        console.log("\nNEXT SESSION: " + sessions[i].sess.user_id);[m
+[32m+[m
+[32m+[m[32m        if (!sessions[i].sess.playlist_id) {[m
+[32m+[m[32m            console.error("ERROR: NO PLAYLIST FOR SAVE GIVEN");[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        //Get access token from DB or by refreshing[m
+[32m+[m[32m        let accessToken: string | undefined = await checkAccessToken([m
+[32m+[m[32m            sessions[i].sess.expires_at,[m
+[32m+[m[32m            sessions[i].sess.refresh_token,[m
+[32m+[m[32m            sessions[i].sess.access_token,[m
+[32m+[m[32m            sessions[i][m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        //if access token present and viable, fetch user recently played and push to array[m
+[32m+[m[32m        if (!accessToken) {[m
+[32m+[m[32m            console.log("ERROR: ACCESS TOKEN FAILURE");[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("ACCESS TOKEN SUCCESS");[m
+[32m+[m
+[32m+[m[32m        const yesterday = new Date([m
+[32m+[m[32m            new Date().setDate(new Date().getDate() - 1)[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        const dbRecentlyPlayed = await getDBRecentlyPlayed([m
+[32m+[m[32m            sessions[i].sess.user_id,[m
+[32m+[m[32m            yesterday[m
+[32m+[m[32m        );[m
+[32m+[m
+[32m+[m[32m        if (dbRecentlyPlayed.length === 0) {[m
+[32m+[m[32m            console.log("CLIENT ERROR: NO TRACKS IN DB");[m
+[32m+[m[32m            continue;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("TRACKS FOUND IN DB: " + dbRecentlyPlayed.length);[m
+[32m+[m
+[32m+[m[32m        let trackListCount: TrackDB[] = [];[m
+[32m+[m
+[32m+[m[32m        //Start by selecting the first track name and comparing it to all the track names in the list[m
+[32m+[m[32m        //Return early if trackListCount already has existing track in array (skip redundant iterations)[m
+[32m+[m[32m        //Increment to count if present[m
+[32m+[m[32m        //Add name of track and count to array[m
+[32m+[m[32m        dbRecentlyPlayed.forEach((trackName: TrackDB) => {[m
+[32m+[m[32m            let count = 0;[m
+[32m+[m[32m            const currentURI = trackName.song_uri;[m
+[32m+[m
+[32m+[m[32m            if ([m
+[32m+[m[32m                trackListCount.filter((track) => track.song_uri === currentURI)[m
+[32m+[m[32m                    .length > 0[m
+[32m+[m[32m            )[m
+[32m+[m[32m                return;[m
+[32m+[m[32m            dbRecentlyPlayed.forEach((trackToCheck: TrackDB) => {[m
+[32m+[m[32m                if (trackToCheck.song_uri === currentURI) count++;[m
+[32m+[m[32m            });[m
+[32m+[m
+[32m+[m[32m            trackListCount.push({[m
+[32m+[m[32m                played_at: trackName.played_at,[m
+[32m+[m[32m                user_id: trackName.user_id,[m
+[32m+[m[32m                song_uri: currentURI,[m
+[32m+[m[32m                count: count,[m
+[32m+[m[32m            });[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        //Sort the list of track counts[m
+[32m+[m[32m        trackListCount = trackListCount.sort((a, b) => b.count! - a.count!);[m
+[32m+[m
+[32m+[m[32m        console.log("TOP PLAYED TRACKS:");[m
+[32m+[m[32m        for (let i = 0; i < 3; i++) {[m
+[32m+[m[32m            console.log([m
+[32m+[m[32m                `TRACK #${i}: ` +[m
+[32m+[m[32m                    trackListCount[i].song_uri +[m
+[32m+[m[32m                    " | " +[m
+[32m+[m[32m                    trackListCount[i].count[m
+[32m+[m[32m            );[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            addTopPlayedTrack([m
+[32m+[m[32m                accessToken,[m
+[32m+[m[32m                trackListCount[0].song_uri,[m
+[32m+[m[32m                sessions[i].sess.playlist_id[m
+[32m+[m[32m            );[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m            console.error(error);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        console.log("SUCCESS!");[m
+[32m+[m[32m    }[m
+[32m+[m[32m    console.log("ADDING TOP TRACK PROCESS COMPLETE");[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mexport { handleTopPlayed };[m
+[1mdiff --git a/db/database.ts b/db/database.ts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..85945db[m
+[1m--- /dev/null[m
+[1m+++ b/db/database.ts[m
+[36m@@ -0,0 +1,14 @@[m
+[32m+[m[32mimport pgPromise from "pg-promise";[m
+[32m+[m
+[32m+[m[32mconst pgp = pgPromise();[m
+[32m+[m[32mconst cn = {[m
+[32m+[m[32m    host: "aws-0-eu-west-2.pooler.supabase.com",[m
+[32m+[m[32m    port: 5432,[m
+[32m+[m[32m    database: "postgres",[m
+[32m+[m[32m    user: "postgres.npajxuxawhrmlgiocfnz",[m
+[32m+[m[32m    password: process.env.DB_PASSWORD,[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mconst db = pgp(cn);[m
+[32m+[m
+[32m+[m[32mexport { db };[m
+[1mdiff --git a/services/AuthServices.ts b/services/AuthServices.ts[m
+[1mindex 0553842..fe96f3e 100644[m
+[1m--- a/services/AuthServices.ts[m
+[1m+++ b/services/AuthServices.ts[m
+[36m@@ -1,5 +1,5 @@[m
+ import request from "request";[m
+[31m-import { db } from "../src";[m
+[32m+[m[32mimport { updateDBAccessToken } from "./DBServices";[m
+ import { Session } from "../lib/types";[m
+ [m
+ const REFRESH_TOKEN_URL = "https://accounts.spotify.com/api/token";[m
+[36m@@ -39,28 +39,7 @@[m [mexport const getRefreshToken = async (refresh_token: string) => {[m
+     return accessToken;[m
+ };[m
+ [m
+[31m-export const updateDBAccessToken = async ([m
+[31m-    accessToken: string,[m
+[31m-    session: Session[m
+[31m-) => {[m
+[31m-    console.log("UPDATING ACCESS TOKEN");[m
+[31m-    try {[m
+[31m-        await db.multiResult([m
+[31m-            "UPDATE session SET sess = jsonb_set(sess, '{access_token}', $1, false) WHERE sid = $2; UPDATE session SET sess = jsonb_set(sess, '{expires_at}', to_jsonb($3), false) WHERE sid = $4",[m
+[31m-            [[m
+[31m-                `"${accessToken}"`,[m
+[31m-                session.sid,[m
+[31m-                Date.now() + 3600 * 1000,[m
+[31m-                session.sid,[m
+[31m-            ][m
+[31m-        );[m
+[31m-        console.log("UPDATING DB SUCCESS");[m
+[31m-    } catch (error) {[m
+[31m-        console.error(error);[m
+[31m-    }[m
+[31m-};[m
+[31m-[m
+[31m-export const CheckAccessToken = async ([m
+[32m+[m[32mexport const checkAccessToken = async ([m
+     expireTime: number,[m
+     refreshToken: string,[m
+     sessionAccessToken: string,[m
+[1mdiff --git a/services/DBServices.ts b/services/DBServices.ts[m
+[1mindex 2aa5263..3b1760f 100644[m
+[1m--- a/services/DBServices.ts[m
+[1m+++ b/services/DBServices.ts[m
+[36m@@ -1,4 +1,5 @@[m
+[31m-import { db } from "../src";[m
+[32m+[m[32mimport { type Session } from "../lib/types";[m
+[32m+[m[32mimport { db } from "../db/database";[m
+ [m
+ export const getDBSessions = async () => {[m
+     try {[m
+[36m@@ -27,3 +28,24 @@[m [mexport const insertRecentlyPlayedIntoDB = async (values: string) => {[m
+             ";"[m
+     );[m
+ };[m
+[32m+[m
+[32m+[m[32mexport const updateDBAccessToken = async ([m
+[32m+[m[32m    accessToken: string,[m
+[32m+[m[32m    session: Session[m
+[32m+[m[32m) => {[m
+[32m+[m[32m    console.log("UPDATING ACCESS TOKEN");[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        await db.multiResult([m
+[32m+[m[32m            "UPDATE session SET sess = jsonb_set(sess, '{access_token}', $1, false) WHERE sid = $2; UPDATE session SET sess = jsonb_set(sess, '{expires_at}', to_jsonb($3), false) WHERE sid = $4",[m
+[32m+[m[32m            [[m
+[32m+[m[32m                `"${accessToken}"`,[m
+[32m+[m[32m                session.sid,[m
+[32m+[m[32m                Date.now() + 3600 * 1000,[m
+[32m+[m[32m                session.sid,[m
+[32m+[m[32m            ][m
+[32m+[m[32m        );[m
+[32m+[m[32m        console.log("UPDATING DB SUCCESS");[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        console.error(error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/index.ts b/src/index.ts[m
+[1mindex 431881e..95fe18d 100644[m
+[1m--- a/src/index.ts[m
+[1m+++ b/src/index.ts[m
+[36m@@ -1,19 +1,8 @@[m
+ import express, { Application } from "express";[m
+ import dotenv from "dotenv";[m
+[31m-import pgPromise from "pg-promise";[m
+ import { CronJob } from "cron";[m
+[31m-import { Session, TrackDB } from "../lib/types";[m
+[31m-import {[m
+[31m-    addTopPlayedTrack,[m
+[31m-    getRecentlyPlayed,[m
+[31m-} from "../services/SpotifyServices";[m
+[31m-import { CheckAccessToken } from "../services/AuthServices";[m
+[31m-import { formatToTrackDB } from "../utils/DBFormatter";[m
+[31m-import {[m
+[31m-    getDBRecentlyPlayed,[m
+[31m-    getDBSessions,[m
+[31m-    insertRecentlyPlayedIntoDB,[m
+[31m-} from "../services/DBServices";[m
+[32m+[m[32mimport { handleRecentlyPlayed } from "../controllers/RecentlyPlayedController";[m
+[32m+[m[32mimport { handleTopPlayed } from "../controllers/TopPlayedController";[m
+ [m
+ dotenv.config();[m
+ [m
+[36m@@ -21,223 +10,6 @@[m [mconst app: Application = express();[m
+ [m
+ app.use(express.json());[m
+ [m
+[31m-const pgp = pgPromise();[m
+[31m-const cn = {[m
+[31m-    host: "aws-0-eu-west-2.pooler.supabase.com",[m
+[31m-    port: 5432,[m
+[31m-    database: "postgres",[m
+[31m-    user: "postgres.npajxuxawhrmlgiocfnz",[m
+[31m-    password: process.env.DB_PASSWORD,[m
+[31m-};[m
+[31m-[m
+[31m-const db = pgp(cn);[m
+[31m-[m
+[31m-const handleRecentlyPlayed = async () => {[m
+[31m-    console.log("\n\n\n");[m
+[31m-    console.log("NEW HANDLE RECENT PLAYED JOB AT: " + new Date());[m
+[31m-[m
+[31m-    const sessions: Session[] | null = await getDBSessions();[m
+[31m-[m
+[31m-    if (!sessions) {[m
+[31m-        console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");[m
+[31m-        return;[m
+[31m-    }[m
+[31m-[m
+[31m-    for (let i = 0; i < sessions.length; i++) {[m
+[31m-        console.log("\nNEXT SESSION");[m
+[31m-[m
+[31m-        let recentlyPlayed: TrackDB[] = [];[m
+[31m-[m
+[31m-        //Get access token from DB or by refreshing[m
+[31m-        let accessToken: string | undefined = await CheckAccessToken([m
+[31m-            sessions[i].sess.expires_at,[m
+[31m-            sessions[i].sess.refresh_token,[m
+[31m-            sessions[i].sess.access_token,[m
+[31m-            sessions[i][m
+[31m-        );[m
+[31m-[m
+[31m-        //if access token present and viable, fetch user recently played and push to array[m
+[31m-        if (!accessToken) {[m
+[31m-            console.log("ACCESS TOKEN FAILURE");[m
+[31m-            continue;[m
+[31m-        }[m
+[31m-[m
+[31m-        console.log("ACCESS TOKEN SUCCESS");[m
+[31m-[m
+[31m-        //Get user recently played using access token[m
+[31m-        const data = await getRecentlyPlayed(accessToken);[m
+[31m-[m
+[31m-        if (data.items.length === 0) {[m
+[31m-            console.log("NO TRACKS IN RECENTLY PLAYED");[m
+[31m-            continue;[m
+[31m-        }[m
+[31m-[m
+[31m-        recentlyPlayed = data.items.map((track) => {[m
+[31m-            //Format the data to be written to DB[m
+[31m-            return formatToTrackDB([m
+[31m-                track.track.uri,[m
+[31m-                sessions[i].sess.user_id,[m
+[31m-                track.played_at[m
+[31m-            );[m
+[31m-        });[m
+[31m-[m
+[31m-        //Get recently played tracks of current user from DB[m
+[31m-        //Convert them to only the time they were played at for comparison[m
+[31m-        const dbRecentlyPlayed = await getDBRecentlyPlayed([m
+[31m-            sessions[i].sess.user_id,[m
+[31m-            new Date()[m
+[31m-        );[m
+[31m-        if (dbRecentlyPlayed.length === 0) {[m
+[31m-            console.log("NO SONGS IN DB");[m
+[31m-            const queryStrRecentlyPlayed = recentlyPlayed[m
+[31m-                .map((track) => {[m
+[31m-                    return `('${track.song_uri}', '${tra
