@@ -58,7 +58,7 @@ const handleRecentlyPlayed = async () => {
             return formatToTrackDB(
                 track.track.uri,
                 sessions[i].sess.user_id,
-                new Date(track.played_at).toString()
+                track.played_at
             );
         });
 
