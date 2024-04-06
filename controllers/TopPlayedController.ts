@@ -42,13 +42,13 @@ const handleTopPlayed = async () => {
 
         console.log("ACCESS TOKEN SUCCESS");
 
-        // const yesterday = new Date(
-        //     new Date().setDate(new Date().getDate() - 1)
-        // );
+        const yesterday = new Date(
+            new Date().setDate(new Date().getDate() - 1)
+        );
 
         const dbRecentlyPlayed = await getDBRecentlyPlayed(
             sessions[i].sess.user_id,
-            new Date()
+            yesterday
         );
 
         if (dbRecentlyPlayed.length === 0) {
