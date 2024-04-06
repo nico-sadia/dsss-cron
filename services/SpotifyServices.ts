@@ -5,7 +5,7 @@ const RECENTLY_PLAYED_URL =
 const PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
 
 const limit = 50;
-const after = new Date();
+const after = new Date().setHours(0, 0, 0);
 
 export const getRecentlyPlayed = async (accessToken: string) => {
     const payload = {
