@@ -1,5 +1,6 @@
-<h2>Saves your top most played song of the day on Spotify to a selected playlist</h2>
+# Spotify top song saver
 
 - All fully automated using cron jobs on https://cron-job.org/
-- Web server hosted on https://render.com/
+- Express web server hosted on https://render.com/
 - PostgreSQL database hosted on https://supabase.com/
+- React frontend not yet deployed
