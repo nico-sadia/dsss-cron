@@ -10,17 +10,17 @@ const app: Application = express();
 
 app.use(express.json());
 
-const RecentlyPlayedJob = CronJob.from({
-    cronTime: "0 */2 * * *",
-    onTick: async () => await handleRecentlyPlayed(),
-    start: true,
-});
+// const RecentlyPlayedJob = CronJob.from({
+//     cronTime: "0 */2 * * *",
+//     onTick: async () => await handleRecentlyPlayed(),
+//     start: true,
+// });
 
-const TopPlayedTrackJob = CronJob.from({
-    cronTime: "10 0 * * *",
-    onTick: async () => await handleTopPlayed(),
-    start: true,
-});
+// const TopPlayedTrackJob = CronJob.from({
+//     cronTime: "10 0 * * *",
+//     onTick: async () => await handleTopPlayed(),
+//     start: true,
+// });
 
 app.get("/", (req, res) => {
     res.send("SUCCESS: " + Date.now());
