@@ -8,6 +8,8 @@ const limit = 50;
 const after = new Date().setHours(0, 0, 0);
 
 export const getRecentlyPlayed = async (accessToken: string) => {
+    console.log("RECENTLY PLAYED DATE: " + after);
+
     const payload = {
         headers: {
             Authorization: `Bearer  ${accessToken}`,
@@ -19,6 +21,9 @@ export const getRecentlyPlayed = async (accessToken: string) => {
         payload
     );
     const data: RecentlyPlayed = await response.json();
+    data.items.forEach((track) => {
+        console.log(track.track.name + ": " + track.played_at);
+    });
     return data;
 };
 
