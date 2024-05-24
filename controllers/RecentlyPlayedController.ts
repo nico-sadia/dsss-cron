@@ -24,6 +24,8 @@ const handleRecentlyPlayed = async () => {
     }
 
     for (let i = 0; i < sessions.length; i++) {
+        console.log("\n");
+        console.log("--------------------------------------------------------");
         console.log("\nNEXT SESSION: " + sessions[i].sess.user_id);
 
         let recentlyPlayed: TrackDB[] = [];
@@ -88,14 +90,20 @@ const handleRecentlyPlayed = async () => {
         const filteredRecentlyPlayed = recentlyPlayed.filter(
             (rowOne) =>
                 !dbRecentlyPlayed.some(
-                    (rowTwo) => rowTwo.played_at === rowOne.played_at
+                    (rowTwo) =>
+                        new Date(rowTwo.played_at).getTime() ===
+                        new Date(rowOne.played_at).getTime()
                 )
         );
 
         if (filteredRecentlyPlayed.length === 0) {
             console.log("NO SONGS TO WRITE TO DB");
         } else {
-            console.log("NEW SONGS FOUND TO WRITE TO DB");
+            console.log("NEW SONGS FOUND TO WRITE TO DB:");
+            console.log("\n");
+            filteredRecentlyPlayed.forEach((track) => {
+                console.log(track);
+            });
             console.log("LENGTH OF API TRACKS: " + recentlyPlayed.length);
             console.log(
                 "LENGTH OF FILTERED TRACKS: " + filteredRecentlyPlayed.length
