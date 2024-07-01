@@ -89,7 +89,7 @@ const handleTopPlayed = async () => {
         trackListCount = trackListCount.sort((a, b) => b.count! - a.count!);
 
         console.log("TOP PLAYED TRACKS:");
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < trackListCount.length; i++) {
             console.log(
                 `TRACK #${i}: ` +
                     trackListCount[i].song_uri +
