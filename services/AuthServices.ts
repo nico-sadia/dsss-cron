@@ -29,7 +29,7 @@ export const getRefreshToken = async (refresh_token: string) => {
                     console.log("REFRESH TOKEN SUCCESS");
                     resolve(body.access_token);
                 } else {
-                    console.log("REFRESH TOKEN ERROR");
+                    console.log("REFRESH TOKEN ERROR" + response.statusCode);
                     reject();
                 }
             });
