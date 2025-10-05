@@ -1,3 +1,8 @@
+export type SpotifyErrorResponse = {
+    error: string;
+    error_description?: string;
+};
+
 export type RecentlyPlayed = {
     items: RecentlyPlayedTrack[];
     next: string;
@@ -7,7 +12,7 @@ export type RecentlyPlayed = {
 export type RecentlyPlayedTrack = {
     context: {};
     played_at: string;
-    track: TrackDetail;
+    track: Track;
 };
 
 export type TrackDB = {
@@ -17,7 +22,7 @@ export type TrackDB = {
     count?: number;
 };
 
-export type TrackDetail = {
+export type Track = {
     name: string;
     uri: string;
     href: string;
@@ -39,3 +44,20 @@ export type SessionData = {
 };
 
 export type CookieData = {};
+
+export type PlaylistTracks = {
+    href: string;
+    limit: number;
+    next: string | null;
+    offset: number;
+    previous: string | null;
+    total: number;
+    items: PlaylistTrackObject[];
+};
+
+export type PlaylistTrackObject = {
+    added_at: string | null;
+    added_by: any;
+    is_local: boolean;
+    track: Track;
+};

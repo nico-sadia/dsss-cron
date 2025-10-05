@@ -1,8 +1,11 @@
 import express, { Application } from "express";
 import dotenv from "dotenv";
-import { CronJob } from "cron";
-import { handleRecentlyPlayed } from "../controllers/RecentlyPlayedController";
-import { handleTopPlayed } from "../controllers/TopPlayedController";
+import { handleRecentlyPlayed } from "./controllers/RecentlyPlayedController";
+import { handleTopPlayed } from "./controllers/TopPlayedController";
+import {
+    getRowCountListenHistory,
+    removeTrackFromPlaylist,
+} from "./controllers/TestController";
 
 dotenv.config();
 
@@ -38,6 +41,28 @@ app.get("/add-recently-played", async (req, res) => {
 app.get("/add-top-track", async (req, res) => {
     try {
         await handleTopPlayed();
+        res.status(201).send("Success");
+    } catch (error) {
+        res.status(500).send("Error");
+    }
+});
+
+app.get("/test-row-count", async (req, res) => {
+    let tableName: string = req.query.tableName as string;
+
+    if (!tableName) res.status(400).send("No table name provided");
+
+    try {
+        const rowCount = await getRowCountListenHistory(tableName);
+        res.status(201).send(rowCount);
+    } catch (error) {
+        res.status(500).send("Error");
+    }
+});
+
+app.get("/test-playlist-remove", async (req, res) => {
+    try {
+        await removeTrackFromPlaylist();
         res.status(201).send("Success");
     } catch (error) {
         res.status(500).send("Error");

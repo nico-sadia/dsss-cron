@@ -1,5 +1,4 @@
 import { stringify } from "querystring";
-import { RecentlyPlayedTrack } from "../lib/types";
 
 export const formatToTrackDB = (
     songURI: string,

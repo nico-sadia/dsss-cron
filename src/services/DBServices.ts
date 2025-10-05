@@ -51,3 +51,11 @@ export const updateDBAccessToken = async (
         console.error(error);
     }
 };
+
+export const getRowCount = async (tableName: string) => {
+    try {
+        return await db.one("SELECT COUNT(*) FROM $1:name   ", [tableName]);
+    } catch (error) {
+        console.log(error);
+    }
+};

@@ -1,7 +1,7 @@
 import { type Session, type TrackDB } from "../lib/types";
 import { getDBSessions, getDBRecentlyPlayed } from "../services/DBServices";
 import { checkAccessToken } from "../services/AuthServices";
-import { addTopPlayedTrack } from "../services/SpotifyServices";
+import { modifyPlaylist } from "../services/PlaylistServices";
 
 const handleTopPlayed = async () => {
     console.log("\n");
@@ -42,9 +42,8 @@ const handleTopPlayed = async () => {
 
         console.log("ACCESS TOKEN SUCCESS");
 
-        const yesterday = new Date(
-            new Date().setDate(new Date().getDate() - 1)
-        );
+        const yesterday = new Date();
+        // new Date().setDate(new Date().getDate() - 1)
 
         const dbRecentlyPlayed = await getDBRecentlyPlayed(
             sessions[i].sess.user_id,
@@ -99,11 +98,12 @@ const handleTopPlayed = async () => {
         }
 
         try {
-            addTopPlayedTrack(
+            modifyPlaylist({
                 accessToken,
-                trackListCount[0].song_uri,
-                sessions[i].sess.playlist_id
-            );
+                action: "POST",
+                playlistId: sessions[i].sess.playlist_id,
+                trackUri: trackListCount[0].song_uri,
+            });
         } catch (error) {
             console.error(error);
         }
