@@ -1,4 +1,7 @@
-import { SpotifyErrorResponse } from "../lib";
+type SpotifyErrorResponse = {
+    error: string;
+    error_description?: string;
+};
 
 export const handleSpotifyError = async (res: Response) => {
     const error: SpotifyErrorResponse = await res.json();

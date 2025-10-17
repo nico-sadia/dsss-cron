@@ -1,11 +1,11 @@
-import { RecentlyPlayed, type Session, type TrackDB } from "../lib/types";
-import { checkAccessToken } from "../services/AuthServices";
+import { type Session, type TrackDB } from "../lib/types";
+import { checkAccessToken } from "../services/auth.service";
 import {
     getDBRecentlyPlayed,
     getDBSessions,
     insertRecentlyPlayedIntoDB,
-} from "../services/DBServices";
-import { getRecentlyPlayed } from "../services/SpotifyServices";
+} from "../services/db.service";
+import { RecentlyPlayed, spotifyClient } from "../spotify";
 import { formatToTrackDB } from "../utils/DBFormatter";
 
 const handleRecentlyPlayed = async () => {
@@ -50,7 +50,7 @@ const handleRecentlyPlayed = async () => {
         let data: RecentlyPlayed | null = null;
 
         try {
-            data = await getRecentlyPlayed(accessToken);
+            data = await spotifyClient.getRecentlyPlayed(accessToken);
         } catch (err) {
             console.error(err);
         }

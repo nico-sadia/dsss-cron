@@ -1,7 +1,7 @@
 import { type Session, type TrackDB } from "../lib/types";
-import { getDBSessions, getDBRecentlyPlayed } from "../services/DBServices";
-import { checkAccessToken } from "../services/AuthServices";
-import { modifyPlaylist } from "../services/PlaylistServices";
+import { checkAccessToken } from "../services/auth.service";
+import { getDBRecentlyPlayed, getDBSessions } from "../services/db.service";
+import { spotifyClient } from "../spotify";
 
 const handleTopPlayed = async () => {
     console.log("\n");
@@ -98,7 +98,7 @@ const handleTopPlayed = async () => {
         }
 
         try {
-            modifyPlaylist({
+            spotifyClient.modifyPlaylist({
                 accessToken,
                 action: "POST",
                 playlistId: sessions[i].sess.playlist_id,
