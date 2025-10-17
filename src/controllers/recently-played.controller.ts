@@ -1,10 +1,5 @@
-import { type Session, type TrackDB } from "../lib/types";
+import { dbClient, type Session, type TrackDB } from "../db";
 import { checkAccessToken } from "../services/auth.service";
-import {
-    getDBRecentlyPlayed,
-    getDBSessions,
-    insertRecentlyPlayedIntoDB,
-} from "../services/db.service";
 import { RecentlyPlayed, spotifyClient } from "../spotify";
 import { formatToTrackDB } from "../utils/DBFormatter";
 
@@ -16,7 +11,7 @@ const handleRecentlyPlayed = async () => {
     console.log("\n");
     console.log("HANDLE RECENT PLAYED JOB AT: " + new Date());
 
-    const sessions: Session[] | null = await getDBSessions();
+    const sessions: Session[] | null = await dbClient.getDBSessions();
 
     if (!sessions) {
         console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");
@@ -72,7 +67,7 @@ const handleRecentlyPlayed = async () => {
 
         //Get recently played tracks of current user from DB
         //Convert them to only the time they were played at for comparison
-        const dbRecentlyPlayed = await getDBRecentlyPlayed(
+        const dbRecentlyPlayed = await dbClient.getDBRecentlyPlayed(
             sessions[i].sess.user_id,
             new Date()
         );
@@ -85,7 +80,7 @@ const handleRecentlyPlayed = async () => {
                 })
                 .join();
             try {
-                insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
+                dbClient.insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
             } catch (error) {
                 console.log(error);
             }
@@ -118,7 +113,7 @@ const handleRecentlyPlayed = async () => {
                 .join();
 
             try {
-                insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
+                dbClient.insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
                 console.log("WRITING NEW SONGS TO DB SUCCESS!");
             } catch (error) {
                 console.log(error);
