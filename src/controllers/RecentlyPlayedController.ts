@@ -1,12 +1,12 @@
-import { type Session, type TrackDB } from "../lib/types";
-import { formatToTrackDB } from "../utils/DBFormatter";
+import { RecentlyPlayed, type Session, type TrackDB } from "../lib/types";
+import { checkAccessToken } from "../services/AuthServices";
 import {
-    getDBSessions,
     getDBRecentlyPlayed,
+    getDBSessions,
     insertRecentlyPlayedIntoDB,
 } from "../services/DBServices";
-import { checkAccessToken } from "../services/AuthServices";
 import { getRecentlyPlayed } from "../services/SpotifyServices";
+import { formatToTrackDB } from "../utils/DBFormatter";
 
 const handleRecentlyPlayed = async () => {
     console.log("\n");
@@ -47,9 +47,15 @@ const handleRecentlyPlayed = async () => {
         console.log("ACCESS TOKEN SUCCESS");
 
         //Get user recently played using access token
-        const data = await getRecentlyPlayed(accessToken);
+        let data: RecentlyPlayed | null = null;
 
-        if (data.items.length === 0) {
+        try {
+            data = await getRecentlyPlayed(accessToken);
+        } catch (err) {
+            console.error(err);
+        }
+
+        if (!data || !data.items || data.items.length === 0) {
             console.log("CLIENT ERROR: NO TRACKS IN RECENTLY PLAYED");
             continue;
         }
@@ -101,9 +107,6 @@ const handleRecentlyPlayed = async () => {
         } else {
             console.log("NEW SONGS FOUND TO WRITE TO DB:");
             console.log("\n");
-            filteredRecentlyPlayed.forEach((track) => {
-                console.log(track);
-            });
             console.log("LENGTH OF API TRACKS: " + recentlyPlayed.length);
             console.log(
                 "LENGTH OF FILTERED TRACKS: " + filteredRecentlyPlayed.length

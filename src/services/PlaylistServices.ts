@@ -1,4 +1,5 @@
 import { PLAYLIST_URL } from "../lib";
+import { spotifyRequest } from "../spotify/request";
 const TEST_PLAYLIST_ID = "4naXlXSJa2uYrQ6lgmlPhs";
 
 type PlaylistAction = "POST" | "DELETE";
@@ -18,29 +19,16 @@ export const modifyPlaylist = async ({
     playlistId,
     trackUri,
     addPosition,
-    deletePosition,
 }: ModifyPlaylistProps) => {
-    const body =
-        action === "POST"
-            ? { uris: [trackUri], position: addPosition }
-            : { tracks: [{ uri: trackUri, positions: [deletePosition] }] };
-
-    const payload = {
-        method: action,
-        headers: {
-            Authorization: `Bearer  ${accessToken}`,
-            "Content-Type": "application/json",
+    const data = await spotifyRequest({
+        url: PLAYLIST_URL + playlistId + "/tracks",
+        payload: {
+            method: action,
+            body: JSON.stringify({ uris: [trackUri], position: addPosition }),
         },
-        body: JSON.stringify(body),
-    };
-
-    const response = await fetch(
-        PLAYLIST_URL + TEST_PLAYLIST_ID + "/tracks",
-        payload
-    );
-
-    const data = await response.json();
+        accessToken: accessToken,
+    });
     console.log(data);
 
-    return response;
+    return data;
 };

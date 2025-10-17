@@ -1,6 +1,6 @@
-import { updateDBAccessToken } from "./DBServices";
 import { Session } from "../lib/index";
 import { getRefreshToken } from "../spotify";
+import { updateDBAccessToken } from "./DBServices";
 
 export const checkAccessToken = async (
     expireTime: number,
