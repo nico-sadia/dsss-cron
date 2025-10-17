@@ -1,6 +1,5 @@
-import { Session } from "../lib/index";
+import { Session, dbClient } from "../db";
 import { getRefreshToken } from "../spotify";
-import { updateDBAccessToken } from "./db.service";
 
 export const checkAccessToken = async (
     expireTime: number,
@@ -16,7 +15,8 @@ export const checkAccessToken = async (
     try {
         console.log("REFRESHING ACCESS TOKEN");
         const accessToken = await getRefreshToken(refreshToken);
-        if (accessToken) await updateDBAccessToken(accessToken, session);
+        if (accessToken)
+            await dbClient.updateDBAccessToken(accessToken, session);
         return accessToken;
     } catch (err) {
         console.error(err);
