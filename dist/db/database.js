@@ -9,10 +9,10 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const pgp = (0, pg_promise_1.default)();
 const cn = {
-    host: "aws-0-eu-west-2.pooler.supabase.com",
+    host: "aws-1-eu-west-2.pooler.supabase.com",
     port: 5432,
     database: "postgres",
-    user: "postgres.npajxuxawhrmlgiocfnz",
+    user: "postgres.qwrfahrgrzhdneoaddho",
     password: process.env.DB_PASSWORD,
 };
 const db = pgp(cn);

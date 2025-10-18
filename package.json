@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon ./src/index.ts",
-        "build": "npm ci && npx tsc --build",
+        "build": "rimraf dist && npm ci && npx tsc --build",
         "start": "node ./dist/src/index.js"
     },
     "keywords": [],
@@ -28,6 +28,7 @@
         "@types/request": "^2.48.12",
         "nodemon": "^3.1.0",
         "pino-pretty": "^13.1.2",
+        "rimraf": "^6.0.1",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.4.3"
     }
