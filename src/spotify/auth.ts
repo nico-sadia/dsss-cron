@@ -19,9 +19,7 @@ export const getRefreshToken = async (refresh_token: string) => {
     };
 
     const res: Response = await fetch(REFRESH_TOKEN_URL, payload);
-
     if (!res.ok) await handleSpotifyError(res);
-
     const data = await res.json();
     return data.access_token;
 };

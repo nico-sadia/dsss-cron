@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express, { Application } from "express";
 import { handleRecentlyPlayed } from "./controllers/recently-played.controller";
 import { handleTopPlayed } from "./controllers/top-played.controller";
+import { baseLogger } from "./utils/logger";
 
 dotenv.config();
 
@@ -32,5 +33,5 @@ app.get("/add-top-track", async (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server is Fire at http://localhost:${process.env.PORT}`);
+    baseLogger.info(`Server is Fire at http://localhost:${process.env.PORT}`);
 });

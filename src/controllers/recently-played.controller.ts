@@ -1,11 +1,12 @@
 import { processAllRecentlyPlayedSessions } from "../services/recently-played.service";
+import { baseLogger } from "../utils/logger";
 
 const handleRecentlyPlayed = async () => {
     try {
         await processAllRecentlyPlayedSessions();
-        console.log("Recently played job success");
-    } catch (err) {
-        console.error("Recently played job failed", err);
+        baseLogger.info("JOB: Recently played job success");
+    } catch (error) {
+        baseLogger.error({ error }, "JOB: Recently played job failed");
     }
 };
 

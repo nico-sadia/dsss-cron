@@ -17,6 +17,7 @@
         "dotenv": "^16.6.1",
         "express": "^4.19.2",
         "pg-promise": "^11.5.5",
+        "pino": "^10.0.0",
         "request": "^2.88.2"
     },
     "devDependencies": {
@@ -26,6 +27,7 @@
         "@types/pg-promise": "^5.4.3",
         "@types/request": "^2.48.12",
         "nodemon": "^3.1.0",
+        "pino-pretty": "^13.1.2",
         "ts-node-dev": "^2.0.0",
         "typescript": "^5.4.3"
     }

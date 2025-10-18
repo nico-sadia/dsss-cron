@@ -1,23 +1,31 @@
 import { dbClient, Session, TrackDB } from "../db";
 import { RecentlyPlayed, spotifyClient } from "../spotify";
 import { formatToTrackDB } from "../utils/DBFormatter";
+import { getLogger, runWithContext } from "../utils/logContext";
+import { baseLogger } from "../utils/logger";
 import { checkAccessToken } from "./auth.service";
 
 export const processAllRecentlyPlayedSessions = async () => {
     const sessions: Session[] = await dbClient.getDBSessions();
 
     if (!sessions) {
-        console.error("ERROR: NO SESSIONS");
+        baseLogger.error(
+            { job: "recentlyPlayed" },
+            "DB: No sessions found - aborting job"
+        );
         return;
     }
 
     for (const session of sessions) {
         try {
-            await processSession(session);
-        } catch (err) {
-            console.error(
-                `Failed to process session ${session.sess.user_id}: `,
-                err
+            await runWithContext(
+                { job: "recentlyPlayed", userId: session.sess.user_id },
+                () => processSession(session)
+            );
+        } catch (error) {
+            baseLogger.error(
+                { job: "recentlyPlayed", error, userId: session.sess.user_id },
+                "JOB: Failed to process session"
             );
             continue;
         }
@@ -25,9 +33,11 @@ export const processAllRecentlyPlayedSessions = async () => {
 };
 
 export const processSession = async (session: Session) => {
-    console.log("\n");
-    console.log("--------------------------------------------------------");
-    console.log("\nNEXT SESSION: " + session.sess.user_id);
+    const logger = getLogger();
+    logger.info(
+        { userId: session.sess.user_id },
+        "JOB: Processing next session"
+    );
 
     //Get access token from DB or by refreshing
     let accessToken: string = await checkAccessToken(
@@ -43,11 +53,14 @@ export const processSession = async (session: Session) => {
     );
 
     if (!spotifyData || !spotifyData.items || spotifyData.items.length === 0) {
-        console.log("CLIENT ERROR: NO TRACKS IN RECENTLY PLAYED");
+        logger.warn("API: No tracks found in recently played");
         return;
     }
 
-    console.log("TRACKS FOUND IN RECENTLY PLAYED: " + spotifyData.items.length);
+    logger.debug(
+        { trackCount: spotifyData.items.length },
+        "API: Fetched tracks from recently played"
+    );
     const formattedTracks: TrackDB[] = spotifyData.items.map((track) => {
         //Format the data to be written to DB
         return formatToTrackDB(
@@ -75,7 +88,7 @@ const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
     );
 
     if (newTracks.length === 0) {
-        console.log("NO NEW TRACKS TO WRITE TO DB");
+        baseLogger.warn({ userId }, "DB: No new tracks to insert");
         return;
     }
 
@@ -83,15 +96,19 @@ const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
         .map((t) => `('${t.song_uri}', '${t.user_id}', '${t.played_at}')`)
         .join();
 
-    console.log("NEW SONGS FOUND TO WRITE TO DB:");
-    console.log("\n");
-    console.log("LENGTH OF API TRACKS: " + tracks.length);
-    console.log("LENGTH OF FILTERED TRACKS: " + newTracks.length);
+    baseLogger.info({ userId }, "DB: Songs found to insert");
+    baseLogger.debug(
+        { userId, trackCount: tracks.length },
+        "API: Tracks fetched from Spotify"
+    );
+    baseLogger.debug(
+        { userId, trackCount: newTracks.length },
+        "DIFF: New tracks"
+    );
 
     dbClient.insertRecentlyPlayedIntoDB(newTracksQueryStr);
 
-    console.log("WRITING NEW SONGS TO DB SUCCESS!");
-    console.log("\n");
+    baseLogger.info({ userId }, "DB: Inserted songs successfully");
 
     // // Case 1: All tracks are new
     // if (dbTracks.length === 0) {
