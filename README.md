@@ -1,6 +1,3 @@
 # Daily Spotify Song Saver (cron job service)
 
-- All fully automated using cron jobs on https://cron-job.org/
-- Express web server hosted on https://render.com/
-- PostgreSQL database hosted on https://supabase.com/
-- React frontend not yet deployed
+- This is an automated Node.js + Typescript service that connects to the Spotify API to fetch a user's recently played tracks and then saves them to a [Supabase](https://supabase.com/) PostgreSQL database. It uses [cron-job.org](https://cron-job.org/en/) to hit endpoints hosted on an Express server hosted by [Render](https://render.com/).
