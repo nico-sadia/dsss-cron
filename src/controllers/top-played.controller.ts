@@ -1,6 +1,5 @@
-import { type Session, type TrackDB } from "../lib/types";
+import { dbClient, Session, TrackDB } from "../db";
 import { checkAccessToken } from "../services/auth.service";
-import { getDBRecentlyPlayed, getDBSessions } from "../services/db.service";
 import { spotifyClient } from "../spotify";
 
 const handleTopPlayed = async () => {
@@ -11,7 +10,7 @@ const handleTopPlayed = async () => {
     console.log("\n");
     console.log("TOP PLAYED TRACK JOB AT: " + new Date(Date.now()));
 
-    const sessions: Session[] | null = await getDBSessions();
+    const sessions: Session[] | null = await dbClient.getDBSessions();
 
     if (!sessions) {
         console.error("ERROR: NO SESSIONS OR FAILURE TO FETCH SESSIONS");
@@ -45,7 +44,7 @@ const handleTopPlayed = async () => {
         const yesterday = new Date();
         // new Date().setDate(new Date().getDate() - 1)
 
-        const dbRecentlyPlayed = await getDBRecentlyPlayed(
+        const dbRecentlyPlayed = await dbClient.getDBRecentlyPlayed(
             sessions[i].sess.user_id,
             yesterday
         );

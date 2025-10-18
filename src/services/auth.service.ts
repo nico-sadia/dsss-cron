@@ -12,13 +12,9 @@ export const checkAccessToken = async (
         console.log("NO REFRESH NEEDED");
         return sessionAccessToken;
     }
-    try {
-        console.log("REFRESHING ACCESS TOKEN");
-        const accessToken = await getRefreshToken(refreshToken);
-        if (accessToken)
-            await dbClient.updateDBAccessToken(accessToken, session);
-        return accessToken;
-    } catch (err) {
-        console.error(err);
-    }
+
+    console.log("REFRESHING ACCESS TOKEN");
+    const accessToken = await getRefreshToken(refreshToken);
+    if (accessToken) await dbClient.updateDBAccessToken(accessToken, session);
+    return accessToken;
 };
