@@ -8,6 +8,14 @@ dotenv.config();
 
 const app: Application = express();
 
+app.use((req, res, next) => {
+    const auth = req.headers.authorization;
+    if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+        return res.status(403).json({ error: "Forbidden" });
+    }
+    next();
+});
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
