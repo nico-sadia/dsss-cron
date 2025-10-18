@@ -32,8 +32,6 @@ export const spotifyClient = {
             },
             accessToken: accessToken,
         });
-        console.log(data);
-
         return data;
     },
 };

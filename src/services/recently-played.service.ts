@@ -22,9 +22,9 @@ export const processAllRecentlyPlayedSessions = async () => {
                 { job: "recentlyPlayed", userId: session.sess.user_id },
                 () => processSession(session)
             );
-        } catch (error) {
+        } catch (err) {
             baseLogger.error(
-                { job: "recentlyPlayed", error, userId: session.sess.user_id },
+                { job: "recentlyPlayed", err, userId: session.sess.user_id },
                 "JOB: Failed to process session"
             );
             continue;
@@ -32,12 +32,9 @@ export const processAllRecentlyPlayedSessions = async () => {
     }
 };
 
-export const processSession = async (session: Session) => {
+const processSession = async (session: Session) => {
     const logger = getLogger();
-    logger.info(
-        { userId: session.sess.user_id },
-        "JOB: Processing next session"
-    );
+    logger.info("JOB: Processing next session");
 
     //Get access token from DB or by refreshing
     let accessToken: string = await checkAccessToken(
@@ -74,6 +71,7 @@ export const processSession = async (session: Session) => {
 };
 
 const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
+    const logger = getLogger();
     //Get recently played tracks of current user from DB
     //Convert them to only the time they were played at for comparison
     const dbTracks = await dbClient.getDBRecentlyPlayed(userId, new Date());
@@ -88,7 +86,7 @@ const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
     );
 
     if (newTracks.length === 0) {
-        baseLogger.warn({ userId }, "DB: No new tracks to insert");
+        logger.warn("DB: No new tracks to insert");
         return;
     }
 
@@ -96,62 +94,14 @@ const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
         .map((t) => `('${t.song_uri}', '${t.user_id}', '${t.played_at}')`)
         .join();
 
-    baseLogger.info({ userId }, "DB: Songs found to insert");
-    baseLogger.debug(
-        { userId, trackCount: tracks.length },
+    logger.info("DB: Songs found to insert");
+    logger.debug(
+        { trackCount: tracks.length },
         "API: Tracks fetched from Spotify"
     );
-    baseLogger.debug(
-        { userId, trackCount: newTracks.length },
-        "DIFF: New tracks"
-    );
+    logger.debug({ trackCount: newTracks.length }, "DIFF: New tracks");
 
     dbClient.insertRecentlyPlayedIntoDB(newTracksQueryStr);
 
-    baseLogger.info({ userId }, "DB: Inserted songs successfully");
-
-    // // Case 1: All tracks are new
-    // if (dbTracks.length === 0) {
-    //     console.log("CLIENT ERROR: NO SONGS IN DB");
-    //     console.log("WRITING ALL TRACKS FOUND IN API TO DB");
-    //     const queryStrRecentlyPlayed = tracks
-    //         .map((track) => {
-    //             return `('${track.song_uri}', '${track.user_id}', '${track.played_at}')`;
-    //         })
-    //         .join();
-
-    //     dbClient.insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
-    //     return;
-    // }
-
-    // // Case 2: Tracks are partially new (some tracks already in db)
-    // console.log("TRACKS FOUND IN DB: " + dbTracks.length);
-    // const filteredRecentlyPlayed = tracks.filter(
-    //     (rowOne) =>
-    //         !dbTracks.some(
-    //             (rowTwo) =>
-    //                 new Date(rowTwo.played_at).getTime() ===
-    //                 new Date(rowOne.played_at).getTime()
-    //         )
-    // );
-
-    // if (filteredRecentlyPlayed.length === 0) {
-    //     console.log("NO SONGS TO WRITE TO DB");
-    // } else {
-    //     console.log("NEW SONGS FOUND TO WRITE TO DB:");
-    //     console.log("\n");
-    //     console.log("LENGTH OF API TRACKS: " + tracks.length);
-    //     console.log(
-    //         "LENGTH OF FILTERED TRACKS: " + filteredRecentlyPlayed.length
-    //     );
-    //     const queryStrRecentlyPlayed = filteredRecentlyPlayed
-    //         .map((track) => {
-    //             return `('${track.song_uri}', '${track.user_id}', '${track.played_at}')`;
-    //         })
-    //         .join();
-
-    //     dbClient.insertRecentlyPlayedIntoDB(queryStrRecentlyPlayed);
-    //     console.log("WRITING NEW SONGS TO DB SUCCESS!");
-    //     console.log("\n");
-    // }
+    logger.info("DB: Inserted songs successfully");
 };

@@ -7,12 +7,12 @@ type SpotifyErrorResponse = {
 
 export const handleSpotifyError = async (res: Response) => {
     const logger = getLogger();
-    const error: SpotifyErrorResponse = await res.json();
+    const err: SpotifyErrorResponse = await res.json();
 
-    logger.error({ error, status: res.status }, "API: Spotify error");
+    logger.error({ err, status: res.status }, "API: Spotify error");
     throw new Error(
         `HTTP Error: (${res.status}): ${
-            error.error_description || JSON.stringify(error)
+            err.error_description || JSON.stringify(err)
         }`
     );
 };

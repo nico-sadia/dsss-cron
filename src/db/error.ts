@@ -1,7 +1,7 @@
 import { getLogger } from "../utils/logContext";
 
-export const handleDbError = (error: Error): never => {
+export const handleDbError = (err: Error): never => {
     const logger = getLogger();
-    logger.error({ error }, "DB: Database error");
-    throw new Error(`Database operation failed: ${error.message}`);
+    logger.error({ err }, "DB: Database error");
+    throw new Error(`Database operation failed: ${err.message}`);
 };

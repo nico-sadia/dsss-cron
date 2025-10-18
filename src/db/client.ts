@@ -10,8 +10,6 @@ export const dbClient = {
     },
 
     getDBRecentlyPlayed: async (userID: string, date: Date) => {
-        console.log("DB DATE: " + date);
-
         return await db
             .each(
                 "SELECT song_uri, user_id, played_at FROM listen_history WHERE user_id = $1 AND date(played_at AT TIME ZONE 'Europe/London') = date($2 AT TIME ZONE 'Europe/London')",
@@ -34,7 +32,6 @@ export const dbClient = {
     },
 
     updateDBAccessToken: async (accessToken: string, session: Session) => {
-        console.log("UPDATING ACCESS TOKEN");
         await db
             .multiResult(
                 "UPDATE session SET sess = jsonb_set(sess, '{access_token}', $1, false) WHERE sid = $2; UPDATE session SET sess = jsonb_set(sess, '{expires_at}', to_jsonb($3), false) WHERE sid = $4",
@@ -46,6 +43,5 @@ export const dbClient = {
                 ]
             )
             .catch(handleDbError);
-        console.log("UPDATING DB SUCCESS");
     },
 };
