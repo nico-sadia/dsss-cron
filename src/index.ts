@@ -9,6 +9,7 @@ dotenv.config();
 const app: Application = express();
 
 app.use((req, res, next) => {
+    if (req.path === "/") return next();
     const auth = req.headers.authorization;
     if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
         return res.status(403).json({ error: "Forbidden" });
@@ -19,7 +20,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("SUCCESS: " + Date.now());
+    res.send("Service awake: " + Date.now());
 });
 
 app.get("/add-recently-played", async (req, res) => {
