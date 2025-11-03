@@ -13,7 +13,7 @@ cronRouter.use((req, res, next) => {
     next();
 });
 
-cronRouter.get("/add-recently-played", async (req, res) => {
+cronRouter.post("/add-recently-played", async (req, res) => {
     try {
         await handleRecentlyPlayed();
         res.status(201).send("Success");
@@ -22,7 +22,7 @@ cronRouter.get("/add-recently-played", async (req, res) => {
     }
 });
 
-cronRouter.get("/add-top-track", async (req, res) => {
+cronRouter.post("/add-top-track", async (req, res) => {
     try {
         await handleTopPlayed();
         res.status(201).send("Success");
@@ -31,4 +31,4 @@ cronRouter.get("/add-top-track", async (req, res) => {
     }
 });
 
-export { cronRouter };
+export default cronRouter;

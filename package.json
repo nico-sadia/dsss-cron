@@ -13,14 +13,19 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@types/express-session": "^1.18.2",
+        "connect-pg-simple": "^10.0.0",
+        "cors": "^2.8.5",
         "cron": "^3.1.6",
         "dotenv": "^16.6.1",
         "express": "^4.19.2",
+        "express-session": "^1.18.2",
         "pg-promise": "^11.5.5",
         "pino": "^10.0.0",
         "request": "^2.88.2"
     },
     "devDependencies": {
+        "@types/cors": "^2.8.19",
         "@types/dotenv": "^8.2.0",
         "@types/express": "^4.17.21",
         "@types/node": "^20.11.30",
