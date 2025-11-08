@@ -44,6 +44,4 @@ export const handleAuthCallback = async (req: Request, code: string) => {
         tokens.access_token,
         tokens.refresh_token
     );
-
-    baseLogger.debug({ tokens: tokens });
 };
