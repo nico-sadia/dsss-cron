@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Session, dbClient } from "../db";
+import { dbClient } from "../db";
 import { spotifyAuthClient, spotifyClient } from "../spotify";
 import { getLogger } from "../utils/logContext";
 import { baseLogger } from "../utils/logger";
@@ -7,22 +7,22 @@ import { baseLogger } from "../utils/logger";
 export const checkAccessToken = async (
     expireTime: number,
     refreshToken: string,
-    sessionAccessToken: string,
-    session: Session
+    currentAccessToken: string,
+    userId: string
 ) => {
     const logger = getLogger();
 
     //Get recently played tracks using access token from DB or by refreshing
     if (expireTime > Date.now()) {
         logger.info("AUTH: Access token still valid");
-        return sessionAccessToken;
+        return currentAccessToken;
     }
 
     logger.info("AUTH: Fetching new access token");
     const accessToken = await spotifyAuthClient.getRefreshToken(refreshToken);
     if (accessToken) {
         logger.info("DB: Updating access token in db");
-        await dbClient.updateDBAccessToken(accessToken, session);
+        await dbClient.updateAccessToken(userId, accessToken);
     }
     return accessToken;
 };

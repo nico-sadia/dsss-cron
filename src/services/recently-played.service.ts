@@ -1,4 +1,4 @@
-import { dbClient, Session, TrackDB } from "../db";
+import { dbClient, SpotifyUser, TrackDB } from "../db";
 import { RecentlyPlayed, spotifyClient } from "../spotify";
 import { formatToTrackDB } from "../utils/DBFormatter";
 import { getLogger, runWithContext } from "../utils/logContext";
@@ -6,42 +6,42 @@ import { baseLogger } from "../utils/logger";
 import { checkAccessToken } from "./auth.service";
 
 export const processAllRecentlyPlayedUsers = async () => {
-    const sessions: Session[] = await dbClient.getDBSessions();
+    const users: SpotifyUser[] = await dbClient.getSpotifyUsers();
 
-    if (!sessions) {
+    if (!users) {
         baseLogger.error(
             { job: "recentlyPlayed" },
-            "DB: No sessions found - aborting job"
+            "DB: No users found - aborting job"
         );
         return;
     }
 
-    for (const session of sessions) {
+    for (const user of users) {
         try {
             await runWithContext(
-                { job: "recentlyPlayed", userId: session.sess.user_id },
-                () => processSession(session)
+                { job: "recentlyPlayed", userId: user.user_id },
+                () => processUser(user)
             );
         } catch (err) {
             baseLogger.error(
-                { job: "recentlyPlayed", err, userId: session.sess.user_id },
-                "JOB: Failed to process session"
+                { job: "recentlyPlayed", err, userId: user.user_id },
+                "JOB: Failed to process user"
             );
             continue;
         }
     }
 };
 
-const processSession = async (session: Session) => {
+const processUser = async (user: SpotifyUser) => {
     const logger = getLogger();
-    logger.info("JOB: Processing next session");
+    logger.info("JOB: Processing next user");
 
     //Get access token from DB or by refreshing
     let accessToken: string = await checkAccessToken(
-        session.sess.expires_at,
-        session.sess.refresh_token,
-        session.sess.access_token,
-        session
+        user.expires_at,
+        user.refresh_token,
+        user.access_token,
+        user.user_id
     );
 
     //Get user recently played using access token
@@ -60,21 +60,17 @@ const processSession = async (session: Session) => {
     );
     const formattedTracks: TrackDB[] = spotifyData.items.map((track) => {
         //Format the data to be written to DB
-        return formatToTrackDB(
-            track.track.uri,
-            session.sess.user_id,
-            track.played_at
-        );
+        return formatToTrackDB(track.track.uri, user.user_id, track.played_at);
     });
 
-    await insertNewTracks(session.sess.user_id, formattedTracks);
+    await insertNewTracks(user.user_id, formattedTracks);
 };
 
 const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
     const logger = getLogger();
     //Get recently played tracks of current user from DB
     //Convert them to only the time they were played at for comparison
-    const dbTracks = await dbClient.getDBRecentlyPlayed(userId, new Date());
+    const dbTracks = await dbClient.getRecentlyPlayed(userId, new Date());
 
     const newTracks = tracks.filter(
         (t) =>
@@ -101,7 +97,7 @@ const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
     );
     logger.debug({ trackCount: newTracks.length }, "DIFF: New tracks");
 
-    dbClient.insertRecentlyPlayedIntoDB(newTracksQueryStr);
+    dbClient.insertRecentlyPlayed(newTracksQueryStr);
 
     logger.info("DB: Inserted songs successfully");
 };

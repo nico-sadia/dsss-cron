@@ -12,11 +12,15 @@ export type Session = {
 
 export type SessionData = {
     cookie: CookieData;
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
     user_id: string;
-    playlist_id: string;
 };
 
 export type CookieData = {};
+
+export type SpotifyUser = {
+    user_id: string;
+    access_token: string;
+    refresh_token: string;
+    playlist_id: string | null;
+    expires_at: number;
+};

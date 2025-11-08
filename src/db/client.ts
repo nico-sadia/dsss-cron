@@ -1,15 +1,23 @@
 import { db } from "../db/database";
 import { handleDbError } from "./error";
-import { type Session } from "./types";
 
 export const dbClient = {
-    getDBSessions: async () => {
+    getSessions: async () => {
         return await db
             .manyOrNone("SELECT sid, sess FROM session")
             .catch(handleDbError);
     },
 
-    getDBRecentlyPlayed: async (userID: string, date: Date) => {
+    getSpotifyUsers: async () => {
+        return await db
+            .manyOrNone(
+                `SELECT user_id, access_token, refresh_token, expires_at
+                FROM spotify_users`
+            )
+            .catch(handleDbError);
+    },
+
+    getRecentlyPlayed: async (userID: string, date: Date) => {
         return await db
             .each(
                 "SELECT song_uri, user_id, played_at FROM listen_history WHERE user_id = $1 AND date(played_at AT TIME ZONE 'Europe/London') = date($2 AT TIME ZONE 'Europe/London')",
@@ -21,7 +29,7 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
-    insertRecentlyPlayedIntoDB: async (values: string) => {
+    insertRecentlyPlayed: async (values: string) => {
         await db
             .any(
                 "INSERT INTO listen_history (song_uri, user_id, played_at) VALUES " +
@@ -31,16 +39,13 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
-    updateDBAccessToken: async (accessToken: string, session: Session) => {
+    updateAccessToken: async (userId: string, accessToken: string) => {
         await db
             .none(
-                `UPDATE session
-                SET sess = jsonb_set(
-                    jsonb_set(sess, '{access_token}', to_jsonb($1), false),
-                    '{expires_at}', to_jsonb($2), false
-                )
-                WHERE sid = $3`,
-                [accessToken, Date.now() + 3600 * 1000, session.sid]
+                `UPDATE spotify_users
+                SET access_token = $1, expires_at = $2
+                WHERE user_id = $3`,
+                [accessToken, Date.now() + 3600 * 1000, userId]
             )
             .catch(handleDbError);
     },

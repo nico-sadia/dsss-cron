@@ -1,62 +1,59 @@
-import { dbClient, Session, TrackDB } from "../db";
+import { dbClient, SpotifyUser, TrackDB } from "../db";
 import { spotifyClient } from "../spotify";
 import { getLogger, runWithContext } from "../utils/logContext";
 import { baseLogger } from "../utils/logger";
 import { checkAccessToken } from "./auth.service";
 
-export const processAllTopPlayedSessions = async () => {
-    const sessions: Session[] = await dbClient.getDBSessions();
+export const processAllTopPlayedUsers = async () => {
+    const users: SpotifyUser[] = await dbClient.getSpotifyUsers();
 
-    if (!sessions) {
+    if (!users) {
         baseLogger.error(
-            { job: "recentlyPlayed" },
-            "DB: No sessions found - aborting job"
+            { job: "topPlayed" },
+            "DB: No users found - aborting job"
         );
         return;
     }
 
-    for (const session of sessions) {
+    for (const user of users) {
         try {
             await runWithContext(
-                { job: "topPlayed", userId: session.sess.user_id },
-                () => processSession(session)
+                { job: "topPlayed", userId: user.user_id },
+                () => processUser(user)
             );
         } catch (err) {
             baseLogger.error(
-                { job: "topPlayed", err, userId: session.sess.user_id },
-                "JOB: Failed to process session"
+                { job: "topPlayed", err, userId: user.user_id },
+                "JOB: Failed to process user"
             );
             continue;
         }
     }
 };
 
-const processSession = async (session: Session) => {
+const processUser = async (user: SpotifyUser) => {
     const logger = getLogger();
 
-    logger.info(
-        { userId: session.sess.user_id },
-        "JOB: Processing next session"
-    );
+    logger.info({ userId: user.user_id }, "JOB: Processing next user");
 
-    if (!session.sess.playlist_id) {
+    if (!user.playlist_id) {
         logger.error("DB: No playlist given to add song to");
         return;
     }
 
     //Get access token from DB or by refreshing
     let accessToken: string = await checkAccessToken(
-        session.sess.expires_at,
-        session.sess.refresh_token,
-        session.sess.access_token,
-        session
+        user.expires_at,
+        user.refresh_token,
+        user.access_token,
+        user.user_id
     );
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const dbRecentlyPlayed = await dbClient.getDBRecentlyPlayed(
-        session.sess.user_id,
+    const dbRecentlyPlayed = await dbClient.getRecentlyPlayed(
+        user.user_id,
         yesterday
     );
 
@@ -115,7 +112,7 @@ const processSession = async (session: Session) => {
     spotifyClient.modifyPlaylist({
         accessToken: accessToken,
         action: "POST",
-        playlistId: session.sess.playlist_id,
+        playlistId: user.playlist_id,
         trackUri: trackListCount[0].song_uri,
     });
 
