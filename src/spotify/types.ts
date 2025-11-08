@@ -42,3 +42,17 @@ export type ModifyPlaylistProps = {
     addPosition?: number;
     deletePosition?: number;
 };
+
+export type UserProfile = {
+    display_name: string;
+    email: string;
+    followers: UserFollowers;
+    href: string;
+    id: string;
+    uri: string;
+};
+
+type UserFollowers = {
+    href: string | null;
+    total: number;
+};

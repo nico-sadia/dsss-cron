@@ -27,7 +27,7 @@ export const handleSpotifyAuthCallback = async (
             return res.status(400).send("Missing code");
         }
 
-        await handleAuthCallback(code as string);
+        await handleAuthCallback(req, code as string);
         baseLogger.info("AUTH: Auth callback complete");
         res.redirect(process.env.FRONTEND_URL!);
     } catch (err) {

@@ -33,15 +33,34 @@ export const dbClient = {
 
     updateDBAccessToken: async (accessToken: string, session: Session) => {
         await db
-            .multiResult(
-                "UPDATE session SET sess = jsonb_set(sess, '{access_token}', $1, false) WHERE sid = $2; UPDATE session SET sess = jsonb_set(sess, '{expires_at}', to_jsonb($3), false) WHERE sid = $4",
-                [
-                    `"${accessToken}"`,
-                    session.sid,
-                    Date.now() + 3600 * 1000,
-                    session.sid,
-                ]
+            .none(
+                `UPDATE session
+                SET sess = jsonb_set(
+                    jsonb_set(sess, '{access_token}', to_jsonb($1), false),
+                    '{expires_at}', to_jsonb($2), false
+                )
+                WHERE sid = $3`,
+                [accessToken, Date.now() + 3600 * 1000, session.sid]
             )
             .catch(handleDbError);
+    },
+
+    upsertSpotifyUser: async (
+        userId: string,
+        accessToken: string,
+        refreshToken: string
+    ) => {
+        await db.none(
+            `INSERT INTO spotify_users 
+                (user_id, access_token, refresh_token, expires_at)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (user_id)
+                DO UPDATE SET
+                access_token = EXCLUDED.access_token,
+                refresh_token = EXCLUDED.refresh_token,
+                expires_at = $4,
+                updated_at = now();`,
+            [userId, accessToken, refreshToken, 3600 * 1000]
+        );
     },
 };

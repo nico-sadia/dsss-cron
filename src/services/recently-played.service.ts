@@ -5,7 +5,7 @@ import { getLogger, runWithContext } from "../utils/logContext";
 import { baseLogger } from "../utils/logger";
 import { checkAccessToken } from "./auth.service";
 
-export const processAllRecentlyPlayedSessions = async () => {
+export const processAllRecentlyPlayedUsers = async () => {
     const sessions: Session[] = await dbClient.getDBSessions();
 
     if (!sessions) {

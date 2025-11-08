@@ -1,5 +1,6 @@
+import { Request } from "express";
 import { Session, dbClient } from "../db";
-import { spotifyAuthClient } from "../spotify";
+import { spotifyAuthClient, spotifyClient } from "../spotify";
 import { getLogger } from "../utils/logContext";
 import { baseLogger } from "../utils/logger";
 
@@ -30,7 +31,19 @@ export const initiateSpotifyAuth = async () => {
     return spotifyAuthClient.getAuthonizationUrl();
 };
 
-export const handleAuthCallback = async (code: string) => {
+export const handleAuthCallback = async (req: Request, code: string) => {
+    baseLogger.debug({ session_id: req.sessionID });
+
     const tokens = await spotifyAuthClient.getAuthTokens(code);
+    const userData = await spotifyClient.getUserProfile(tokens.access_token);
+
+    req.session.user_id = userData.id;
+
+    await dbClient.upsertSpotifyUser(
+        userData.id,
+        tokens.access_token,
+        tokens.refresh_token
+    );
+
     baseLogger.debug({ tokens: tokens });
 };

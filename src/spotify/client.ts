@@ -1,6 +1,6 @@
-import { PLAYLIST_URL, RECENTLY_PLAYED_URL } from "../lib";
+import { PLAYLIST_URL, RECENTLY_PLAYED_URL, USER_PROFILE_URL } from "../lib";
 import { spotifyRequest } from "../spotify/request";
-import { ModifyPlaylistProps, RecentlyPlayed } from "./types";
+import { ModifyPlaylistProps, RecentlyPlayed, UserProfile } from "./types";
 
 export const spotifyClient = {
     getRecentlyPlayed: async (accessToken: string) => {
@@ -32,6 +32,16 @@ export const spotifyClient = {
             },
             accessToken: accessToken,
         });
+        return data;
+    },
+
+    getUserProfile: async (accessToken: string) => {
+        const data = await spotifyRequest<UserProfile>({
+            url: USER_PROFILE_URL,
+            payload: {},
+            accessToken: accessToken,
+        });
+
         return data;
     },
 };
