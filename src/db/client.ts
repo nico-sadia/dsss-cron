@@ -29,6 +29,18 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
+    getSpotifyUserIdFromSession: async (sessionId: string) => {
+        return await db
+            .oneOrNone(
+                `SELECT sess->>'user_id' AS "userId"
+            FROM session
+            WHERE sid = $1
+            `,
+                [sessionId]
+            )
+            .catch(handleDbError);
+    },
+
     insertRecentlyPlayed: async (values: string) => {
         await db
             .any(

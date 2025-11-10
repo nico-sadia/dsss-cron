@@ -32,10 +32,11 @@ export const initiateSpotifyAuth = async () => {
 };
 
 export const handleAuthCallback = async (req: Request, code: string) => {
-    baseLogger.debug({ session_id: req.sessionID });
-
     const tokens = await spotifyAuthClient.getAuthTokens(code);
     const userData = await spotifyClient.getUserProfile(tokens.access_token);
+
+    baseLogger.info({ user_id: userData.id });
+    baseLogger.info({ sid: req.sessionID });
 
     req.session.user_id = userData.id;
 
