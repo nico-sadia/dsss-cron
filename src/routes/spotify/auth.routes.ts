@@ -24,13 +24,7 @@ authRouter.get("/", async (req, res) => {
     userId ? res.status(200).json(userId) : res.status(404).json(userId);
 });
 
-authRouter.get("/login", async (req, res) => {
-    baseLogger.info({ initial_login_sid: req.sessionID });
-    await handleSpotifyAuthLogin(res);
-});
-
-authRouter.get("/callback", async (req, res) => {
-    await handleSpotifyAuthCallback(req, res);
-});
+authRouter.get("/login", handleSpotifyAuthLogin);
+authRouter.get("/callback", handleSpotifyAuthCallback);
 
 export default authRouter;

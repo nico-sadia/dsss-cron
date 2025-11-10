@@ -5,7 +5,7 @@ import {
 } from "../services/auth.service";
 import { baseLogger } from "../utils/logger";
 
-export const handleSpotifyAuthLogin = async (res: Response) => {
+export const handleSpotifyAuthLogin = async (req: Request, res: Response) => {
     try {
         const url = await initiateSpotifyAuth();
         res.redirect(url);

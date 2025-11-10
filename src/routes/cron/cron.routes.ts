@@ -1,6 +1,6 @@
 import express from "express";
-import { handleRecentlyPlayed } from "../../controllers/recently-played.controller";
-import { handleTopPlayed } from "../../controllers/top-played.controller";
+import { addRecentlyPlayed } from "../../controllers/recently-played.controller";
+import { addTopPlayed } from "../../controllers/top-played.controller";
 
 const cronRouter = express.Router();
 
@@ -13,22 +13,7 @@ cronRouter.use((req, res, next) => {
     next();
 });
 
-cronRouter.get("/add-recently-played", async (req, res) => {
-    try {
-        await handleRecentlyPlayed();
-        res.status(201).send("Success");
-    } catch (error) {
-        res.status(500).send("Error");
-    }
-});
-
-cronRouter.get("/add-top-track", async (req, res) => {
-    try {
-        await handleTopPlayed();
-        res.status(201).send("Success");
-    } catch (error) {
-        res.status(500).send("Error");
-    }
-});
+cronRouter.get("/add-recently-played", addRecentlyPlayed);
+cronRouter.get("/add-top-track", addTopPlayed);
 
 export default cronRouter;
