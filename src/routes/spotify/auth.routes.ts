@@ -17,11 +17,14 @@ authRouter.get("/", async (req, res) => {
     const sessionId = req.sessionID;
     baseLogger.debug({ session_id: req.sessionID });
 
-    const userId = await dbClient.getSpotifyUserIdFromSession(sessionId);
+    // const userId = await dbClient.getSpotifyUserIdFromSession(sessionId);
+    const sessionExists = await dbClient.sessionExists(sessionId);
 
-    baseLogger.debug({ user_id: userId });
+    baseLogger.debug({ session_exists: sessionExists });
 
-    userId ? res.status(200).json(userId) : res.status(404).json(userId);
+    sessionExists
+        ? res.status(200).json({ isAuthenticated: sessionExists.exists })
+        : res.status(404).json({ isAuthenticated: false });
 });
 
 authRouter.get("/login", handleSpotifyAuthLogin);

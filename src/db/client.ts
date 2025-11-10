@@ -80,4 +80,17 @@ export const dbClient = {
             [userId, accessToken, refreshToken, 3600 * 1000]
         );
     },
+
+    sessionExists: async (sessionId: string) => {
+        return await db
+            .one<{ exists: boolean }>(
+                `SELECT EXISTS (
+                SELECT 1
+                FROM session
+                WHERE sid = $1
+            )`,
+                [sessionId]
+            )
+            .catch(handleDbError);
+    },
 };
