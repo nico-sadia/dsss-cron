@@ -2,8 +2,22 @@ import { Request, Response } from "express";
 import {
     handleAuthCallback,
     initiateSpotifyAuth,
+    validateUserSession,
 } from "../services/auth.service";
 import { baseLogger } from "../utils/logger";
+
+export const handleSessionValidation = async (
+    req: Request,
+    res: Response<{ isAuthenticated: boolean }>
+) => {
+    try {
+        const result = await validateUserSession(req);
+        res.status(200).json({ isAuthenticated: result.exists });
+    } catch (err) {
+        baseLogger.error({ err }, "AUTH: Session login falied");
+        res.status(500).json({ isAuthenticated: false });
+    }
+};
 
 export const handleSpotifyAuthLogin = async (req: Request, res: Response) => {
     try {

@@ -37,12 +37,7 @@ const processUser = async (user: SpotifyUser) => {
     logger.info("JOB: Processing next user");
 
     //Get access token from DB or by refreshing
-    let accessToken: string = await checkAccessToken(
-        user.expires_at,
-        user.refresh_token,
-        user.access_token,
-        user.user_id
-    );
+    let accessToken: string = await checkAccessToken(user.user_id);
 
     //Get user recently played using access token
     let spotifyData: RecentlyPlayed = await spotifyClient.getRecentlyPlayed(

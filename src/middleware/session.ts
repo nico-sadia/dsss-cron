@@ -10,5 +10,9 @@ export const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 60 * 60 * 24 * 365 * 10000 },
+    cookie: {
+        maxAge: 60 * 60 * 24 * 365 * 10000,
+        sameSite: "lax",
+        httpOnly: true,
+    },
 });

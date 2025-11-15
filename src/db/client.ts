@@ -1,5 +1,6 @@
 import { db } from "../db/database";
 import { handleDbError } from "./error";
+import { SpotifyUser } from "./types";
 
 export const dbClient = {
     getSessions: async () => {
@@ -31,12 +32,24 @@ export const dbClient = {
 
     getSpotifyUserIdFromSession: async (sessionId: string) => {
         return await db
-            .oneOrNone(
+            .oneOrNone<{ userId: string }>(
                 `SELECT sess->>'user_id' AS "userId"
             FROM session
             WHERE sid = $1
             `,
                 [sessionId]
+            )
+            .catch(handleDbError);
+    },
+
+    getSpotifyUserFromUserId: async (userId: string) => {
+        return await db
+            .oneOrNone<SpotifyUser>(
+                `SELECT user_id, access_token, refresh_token, playlist_id, expires_at
+                FROM spotify_users
+                WHERE user_id = $1
+                `,
+                [userId]
             )
             .catch(handleDbError);
     },

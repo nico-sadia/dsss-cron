@@ -42,12 +42,7 @@ const processUser = async (user: SpotifyUser) => {
     }
 
     //Get access token from DB or by refreshing
-    let accessToken: string = await checkAccessToken(
-        user.expires_at,
-        user.refresh_token,
-        user.access_token,
-        user.user_id
-    );
+    let accessToken: string = await checkAccessToken(user.user_id);
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);

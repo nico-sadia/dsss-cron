@@ -1,33 +1,16 @@
-import dotenv from "dotenv";
 import { Router } from "express";
 import {
+    handleSessionValidation,
     handleSpotifyAuthCallback,
     handleSpotifyAuthLogin,
 } from "../../controllers/auth.controller";
-import { dbClient } from "../../db";
-import { sessionMiddleware } from "../../middleware/session";
-import { baseLogger } from "../../utils/logger";
 
-dotenv.config();
+const spotifyAuthRouter = Router();
 
-const authRouter = Router();
-authRouter.use(sessionMiddleware);
+spotifyAuthRouter.get("/status", handleSessionValidation);
 
-authRouter.get("/", async (req, res) => {
-    const sessionId = req.sessionID;
-    baseLogger.debug({ session_id: req.sessionID });
+spotifyAuthRouter.get("/login", handleSpotifyAuthLogin);
 
-    // const userId = await dbClient.getSpotifyUserIdFromSession(sessionId);
-    const sessionExists = await dbClient.sessionExists(sessionId);
+spotifyAuthRouter.get("/callback", handleSpotifyAuthCallback);
 
-    baseLogger.debug({ session_exists: sessionExists });
-
-    sessionExists
-        ? res.status(200).json({ isAuthenticated: sessionExists.exists })
-        : res.status(404).json({ isAuthenticated: false });
-});
-
-authRouter.get("/login", handleSpotifyAuthLogin);
-authRouter.get("/callback", handleSpotifyAuthCallback);
-
-export default authRouter;
+export default spotifyAuthRouter;
