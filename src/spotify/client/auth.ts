@@ -1,13 +1,13 @@
 import querystring from "querystring";
-import { AUTH_TOKEN_URL } from "../lib/index";
-import { generateRandomString } from "../utils/helpers";
-import { handleSpotifyError } from "./error";
+import { AUTH_TOKEN_URL } from "../../lib";
+import { generateRandomString } from "../../utils/helpers";
+import { handleSpotifyError } from "../error";
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 
-export const spotifyAuthClient = {
+export const auth = {
     getAuthonizationUrl: async () => {
         const state = generateRandomString(16);
         const scope = "user-read-private user-read-email";
@@ -50,6 +50,7 @@ export const spotifyAuthClient = {
         if (!res.ok) await handleSpotifyError(res);
         return res.json(); // { access_token, refresh_token, expires_in }
     },
+
     getRefreshToken: async (refresh_token: string) => {
         const payload = {
             method: "POST",

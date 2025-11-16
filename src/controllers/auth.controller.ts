@@ -11,8 +11,8 @@ export const handleSessionValidation = async (
     res: Response<{ isAuthenticated: boolean }>
 ) => {
     try {
-        const result = await validateUserSession(req);
-        res.status(200).json({ isAuthenticated: result.exists });
+        const exists = await validateUserSession(req);
+        res.status(200).json({ isAuthenticated: exists });
     } catch (err) {
         baseLogger.error({ err }, "AUTH: Session login falied");
         res.status(500).json({ isAuthenticated: false });

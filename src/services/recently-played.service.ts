@@ -40,9 +40,8 @@ const processUser = async (user: SpotifyUser) => {
     let accessToken: string = await checkAccessToken(user.user_id);
 
     //Get user recently played using access token
-    let spotifyData: RecentlyPlayed = await spotifyClient.getRecentlyPlayed(
-        accessToken
-    );
+    let spotifyData: RecentlyPlayed =
+        await spotifyClient.player.getRecentlyPlayed(accessToken);
 
     if (!spotifyData || !spotifyData.items || spotifyData.items.length === 0) {
         logger.warn("API: No tracks found in recently played");

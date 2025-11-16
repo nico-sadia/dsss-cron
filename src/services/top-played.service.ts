@@ -104,12 +104,11 @@ const processUser = async (user: SpotifyUser) => {
         );
     }
 
-    spotifyClient.modifyPlaylist({
-        accessToken: accessToken,
-        action: "POST",
-        playlistId: user.playlist_id,
-        trackUri: trackListCount[0].song_uri,
-    });
+    spotifyClient.playlist.addItemsToPlaylist(
+        accessToken,
+        user.playlist_id,
+        trackListCount[0].song_uri
+    );
 
     logger.info("API: Added top song to playlist successfully");
 };

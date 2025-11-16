@@ -18,11 +18,11 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
-    getRecentlyPlayed: async (userID: string, date: Date) => {
+    getRecentlyPlayed: async (userId: string, date: Date) => {
         return await db
             .each(
                 "SELECT song_uri, user_id, played_at FROM listen_history WHERE user_id = $1 AND date(played_at AT TIME ZONE 'Europe/London') = date($2 AT TIME ZONE 'Europe/London')",
-                [userID, date],
+                [userId, date],
                 (row) => {
                     row.played_at = row.played_at.toISOString();
                 }
@@ -30,13 +30,25 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
+    getSavedPlaylist: async (userId: string) => {
+        return await db
+            .oneOrNone<{ playlist_id: string | null }>(
+                `SELECT playlist_id
+            FROM spotify_users
+            WHERE user_id = $1
+            `,
+                [userId]
+            )
+            .catch(handleDbError);
+    },
+
     getSpotifyUserIdFromSession: async (sessionId: string) => {
         return await db
-            .oneOrNone<{ userId: string }>(
+            .oneOrNone<string>(
                 `SELECT sess->>'user_id' AS "userId"
-            FROM session
-            WHERE sid = $1
-            `,
+                FROM session
+                WHERE sid = $1
+                `,
                 [sessionId]
             )
             .catch(handleDbError);
@@ -96,7 +108,7 @@ export const dbClient = {
 
     sessionExists: async (sessionId: string) => {
         return await db
-            .one<{ exists: boolean }>(
+            .oneOrNone<{ exists: boolean }>(
                 `SELECT EXISTS (
                 SELECT 1
                 FROM session

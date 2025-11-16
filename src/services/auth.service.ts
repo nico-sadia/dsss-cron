@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { dbClient } from "../db";
-import { spotifyAuthClient, spotifyClient } from "../spotify";
+import { spotifyClient } from "../spotify";
 import { getLogger } from "../utils/logContext";
 import { baseLogger } from "../utils/logger";
 
@@ -17,7 +17,7 @@ export const checkAccessToken = async (userId: string) => {
     }
 
     logger.info("AUTH: Fetching new access token");
-    const newAccessToken = await spotifyAuthClient.getRefreshToken(
+    const newAccessToken = await spotifyClient.auth.getRefreshToken(
         refresh_token
     );
 
@@ -30,12 +30,14 @@ export const checkAccessToken = async (userId: string) => {
 };
 
 export const initiateSpotifyAuth = async () => {
-    return spotifyAuthClient.getAuthonizationUrl();
+    return spotifyClient.auth.getAuthonizationUrl();
 };
 
 export const handleAuthCallback = async (req: Request, code: string) => {
-    const tokens = await spotifyAuthClient.getAuthTokens(code);
-    const userData = await spotifyClient.getUserProfile(tokens.access_token);
+    const tokens = await spotifyClient.auth.getAuthTokens(code);
+    const userData = await spotifyClient.user.getUserProfile(
+        tokens.access_token
+    );
 
     baseLogger.info({ user_id: userData.id });
     baseLogger.info({ sid: req.sessionID });
@@ -62,5 +64,5 @@ export const validateUserSession = async (req: Request) => {
         throw new Error("Session does not exist, please login with spotify");
     }
 
-    return sessionExists;
+    return sessionExists.exists;
 };

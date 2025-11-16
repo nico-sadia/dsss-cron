@@ -1,47 +1,13 @@
-import { PLAYLIST_URL, RECENTLY_PLAYED_URL, USER_PROFILE_URL } from "../lib";
-import { spotifyRequest } from "../spotify/request";
-import { ModifyPlaylistProps, RecentlyPlayed, UserProfile } from "./types";
+import { auth } from "./client/auth";
+import { player } from "./client/player";
+import { playlist } from "./client/playlist";
+import { user } from "./client/user";
 
 export const spotifyClient = {
-    getRecentlyPlayed: async (accessToken: string) => {
-        const data = await spotifyRequest<RecentlyPlayed>({
-            url: RECENTLY_PLAYED_URL,
-            payload: {
-                method: "GET",
-            },
-            params: {
-                limit: 50,
-                after: new Date().setHours(0, 0, 0),
-            },
-            accessToken: accessToken,
-        });
-        return data;
-    },
-
-    modifyPlaylist: async ({
-        accessToken,
-        action,
-        playlistId,
-        trackUri,
-    }: ModifyPlaylistProps) => {
-        const data = await spotifyRequest({
-            url: PLAYLIST_URL + playlistId + "/tracks",
-            payload: {
-                method: action,
-                body: JSON.stringify({ uris: [trackUri] }),
-            },
-            accessToken: accessToken,
-        });
-        return data;
-    },
-
-    getUserProfile: async (accessToken: string) => {
-        const data = await spotifyRequest<UserProfile>({
-            url: USER_PROFILE_URL,
-            payload: {},
-            accessToken: accessToken,
-        });
-
-        return data;
-    },
+    user,
+    playlist,
+    player,
+    auth,
 };
+
+export type SpotifyClient = typeof spotifyClient;
