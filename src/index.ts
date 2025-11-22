@@ -10,8 +10,8 @@ dotenv.config();
 const app: Application = express();
 
 app.use(cors({ credentials: true, origin: process.env.FRONTEND_URL }));
-app.use(express.json());
 app.use(sessionMiddleware);
+app.use(express.json());
 
 app.get("/", (req, res) => {
     res.send("Service awake: " + Date.now());

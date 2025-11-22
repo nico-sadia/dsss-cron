@@ -99,3 +99,13 @@ type UserFollowers = {
     href: string | null;
     total: number;
 };
+
+export type UserPlaylistsResponse = {
+    href: string;
+    limit: number;
+    next: string;
+    offset: number;
+    previous: string | null;
+    total: number;
+    items: Playlist[];
+};

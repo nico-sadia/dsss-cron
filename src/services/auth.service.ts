@@ -12,7 +12,6 @@ export const checkAccessToken = async (userId: string) => {
     const { access_token, refresh_token, expires_at } = user;
 
     if (expires_at > Date.now()) {
-        logger.info("AUTH: Access token still valid");
         return access_token;
     }
 
@@ -53,11 +52,7 @@ export const handleAuthCallback = async (req: Request, code: string) => {
 
 export const validateUserSession = async (req: Request) => {
     const sessionId = req.sessionID;
-    baseLogger.debug({ session_id: req.sessionID });
-
     const sessionExists = await dbClient.sessionExists(sessionId);
-
-    baseLogger.debug({ session_exists: sessionExists });
 
     if (!sessionExists) {
         baseLogger.warn("AUTH: Invalid session, user must log in");

@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from "date-fns";
 import { dbClient, SpotifyUser, TrackDB } from "../db";
 import { spotifyClient } from "../spotify";
 import { getLogger, runWithContext } from "../utils/logContext";
@@ -49,7 +50,9 @@ const processUser = async (user: SpotifyUser) => {
 
     const dbRecentlyPlayed = await dbClient.getRecentlyPlayed(
         user.user_id,
-        yesterday
+        startOfDay(yesterday),
+        endOfDay(yesterday),
+        user.timezone
     );
 
     if (dbRecentlyPlayed.length === 0) {
@@ -60,14 +63,14 @@ const processUser = async (user: SpotifyUser) => {
     logger.info("DB: Tracks found in DB");
     logger.debug({ trackCount: dbRecentlyPlayed.length });
 
-    let trackListCount: TrackDB[] = [];
+    let trackListCount: (TrackDB & { count: number })[] = [];
 
     //Start by selecting the first track name and comparing it to all the track names in the list
     //Return early if trackListCount already has existing track in array (skip redundant iterations)
     //Increment to count if present
     //Add name of track and count to array
     dbRecentlyPlayed.forEach((trackName: TrackDB) => {
-        let count = 0;
+        let count = 1;
         const currentURI = trackName.song_uri;
 
         if (
@@ -104,11 +107,20 @@ const processUser = async (user: SpotifyUser) => {
         );
     }
 
-    spotifyClient.playlist.addItemsToPlaylist(
+    const topSongUri = trackListCount[0].song_uri;
+    const topSongPlayCount = trackListCount[0].count;
+
+    await spotifyClient.playlist.addItemsToPlaylist(
         accessToken,
         user.playlist_id,
-        trackListCount[0].song_uri
+        topSongUri
     );
 
-    logger.info("API: Added top song to playlist successfully");
+    await dbClient.insertTopSongSummary(
+        user.user_id,
+        topSongUri,
+        topSongPlayCount
+    );
+
+    logger.info("API: Added top song to playlist and db successfully");
 };

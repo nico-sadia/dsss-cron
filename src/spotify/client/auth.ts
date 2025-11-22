@@ -10,7 +10,8 @@ const redirect_uri = process.env.REDIRECT_URI;
 export const auth = {
     getAuthonizationUrl: async () => {
         const state = generateRandomString(16);
-        const scope = "user-read-private user-read-email";
+        const scope =
+            "user-read-private user-read-email user-top-read user-read-recently-played playlist-modify-public playlist-modify-private playlist-read-collaborative";
 
         return (
             "https://accounts.spotify.com/authorize?" +

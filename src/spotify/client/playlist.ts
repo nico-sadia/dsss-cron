@@ -5,7 +5,7 @@ import { Playlist } from "../types";
 export const playlist = {
     getPlaylist: async (playlistId: string, accessToken: string) => {
         const data = await spotifyRequest<Playlist>({
-            url: PLAYLIST_URL + playlistId,
+            url: PLAYLIST_URL + `/${playlistId}`,
             payload: {},
             accessToken: accessToken,
         });
@@ -19,7 +19,7 @@ export const playlist = {
         trackUri: string
     ) => {
         const data = await spotifyRequest({
-            url: PLAYLIST_URL + playlistId + "/tracks",
+            url: PLAYLIST_URL + `${playlistId}` + "/tracks",
             payload: {
                 method: "POST",
                 body: JSON.stringify({ uris: [trackUri] }),

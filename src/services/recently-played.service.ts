@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from "date-fns";
 import { dbClient, SpotifyUser, TrackDB } from "../db";
 import { RecentlyPlayed, spotifyClient } from "../spotify";
 import { formatToTrackDB } from "../utils/DBFormatter";
@@ -57,14 +58,26 @@ const processUser = async (user: SpotifyUser) => {
         return formatToTrackDB(track.track.uri, user.user_id, track.played_at);
     });
 
-    await insertNewTracks(user.user_id, formattedTracks);
+    await insertNewTracks(user.user_id, user.timezone, formattedTracks);
 };
 
-const insertNewTracks = async (userId: string, tracks: TrackDB[]) => {
+const insertNewTracks = async (
+    userId: string,
+    timezone: string,
+    tracks: TrackDB[]
+) => {
     const logger = getLogger();
     //Get recently played tracks of current user from DB
     //Convert them to only the time they were played at for comparison
-    const dbTracks = await dbClient.getRecentlyPlayed(userId, new Date());
+
+    const dbTracks = await dbClient.getRecentlyPlayed(
+        userId,
+        startOfDay(new Date()),
+        endOfDay(new Date()),
+        timezone
+    );
+
+    baseLogger.debug(dbTracks);
 
     const newTracks = tracks.filter(
         (t) =>

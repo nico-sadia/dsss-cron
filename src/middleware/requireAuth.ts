@@ -5,9 +5,8 @@ export const requireAuth = (
     res: Response,
     next: NextFunction
 ) => {
-    if (!req.session) {
+    if (!req.session.user_id) {
         return res.status(401).json({ message: "Unauthorized" });
     }
-
     next();
 };

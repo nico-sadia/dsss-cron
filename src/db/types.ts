@@ -2,7 +2,6 @@ export type TrackDB = {
     song_uri: string;
     user_id: string;
     played_at: string;
-    count?: number;
 };
 
 export type Session = {
@@ -23,4 +22,5 @@ export type SpotifyUser = {
     refresh_token: string;
     playlist_id: string | null;
     expires_at: number;
+    timezone: string;
 };

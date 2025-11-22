@@ -3,10 +3,24 @@ import { spotifyClient } from "../spotify";
 import { baseLogger } from "../utils/logger";
 import { checkAccessToken } from "./auth.service";
 
+export const fetchTrack = async (userId: string, trackId: string) => {
+    const accessToken = await checkAccessToken(userId);
+    const track = await spotifyClient.track.getTrack(trackId, accessToken);
+    return track;
+};
+
 export const fetchUserProfile = async (userId: string) => {
     const accessToken = await checkAccessToken(userId);
     const userProfile = await spotifyClient.user.getUserProfile(accessToken);
     return userProfile;
+};
+
+export const fetchUserPlaylists = async (userId: string) => {
+    const accessToken = await checkAccessToken(userId);
+    const userPlaylists = await spotifyClient.user.getUserPlaylists(
+        accessToken
+    );
+    return userPlaylists;
 };
 
 export const fetchSavedPlaylist = async (userId: string) => {
@@ -24,4 +38,41 @@ export const fetchSavedPlaylist = async (userId: string) => {
     );
 
     return savedPlaylist;
+};
+
+export const fetchTopSongSummaries = async (
+    userId: string,
+    {
+        from,
+        to,
+        limit = 50,
+        offset = 0,
+    }: { from?: Date; to?: Date; limit?: number; offset?: number }
+) => {
+    const user = await dbClient.getSpotifyUserFromUserId(userId);
+
+    if (!user) {
+        baseLogger.error("API: User does not exist");
+        throw new Error("User does not exist");
+    }
+
+    if (from && to) {
+        return await dbClient.getTopSongSummariesInRange(
+            userId,
+            from,
+            to,
+            user.timezone,
+            limit,
+            offset
+        );
+    }
+
+    return await dbClient.getTopSongSummaries(userId, limit, offset);
+};
+
+export const updateSavedPlaylist = async (
+    userId: string,
+    playlistId: string
+) => {
+    await dbClient.updateSavedPlaylist(userId, playlistId);
 };

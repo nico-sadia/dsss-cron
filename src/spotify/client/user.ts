@@ -1,6 +1,6 @@
-import { USER_PROFILE_URL } from "../../lib";
+import { USER_PLAYLISTS_URL, USER_PROFILE_URL } from "../../lib";
 import { spotifyRequest } from "../request";
-import { UserProfile } from "../types";
+import { UserPlaylistsResponse, UserProfile } from "../types";
 
 export const user = {
     getUserProfile: async (accessToken: string) => {
@@ -10,6 +10,14 @@ export const user = {
             accessToken: accessToken,
         });
 
+        return data;
+    },
+    getUserPlaylists: async (accessToken: string) => {
+        const data = await spotifyRequest<UserPlaylistsResponse>({
+            url: USER_PLAYLISTS_URL,
+            payload: {},
+            accessToken: accessToken,
+        });
         return data;
     },
 };
