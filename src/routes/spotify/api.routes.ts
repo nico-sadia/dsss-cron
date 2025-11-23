@@ -4,6 +4,7 @@ import {
     getSavedPlaylist,
     getTopSongSummaries,
     getTrack,
+    getTracks,
     getUserPlaylists,
     getUserProfile,
     updateSavedPlaylist,
@@ -21,6 +22,7 @@ spotifyApiRouter.get("/saved-playlist", getSavedPlaylist);
 spotifyApiRouter.get("/top-song-summaries", getTopSongSummaries);
 spotifyApiRouter.get("/listen-history", getListenHistory);
 spotifyApiRouter.get("/tracks/:trackId", getTrack);
+spotifyApiRouter.get("/tracks", getTracks);
 spotifyApiRouter.patch("/saved-playlist", updateSavedPlaylist);
 
 export default spotifyApiRouter;

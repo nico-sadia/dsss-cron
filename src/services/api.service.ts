@@ -9,6 +9,12 @@ export const fetchTrack = async (userId: string, trackId: string) => {
     return track;
 };
 
+export const fetchTracks = async (userId: string, trackIds: string) => {
+    const accessToken = await checkAccessToken(userId);
+    const tracks = await spotifyClient.track.getTracks(trackIds, accessToken);
+    return tracks;
+};
+
 export const fetchUserProfile = async (userId: string) => {
     const accessToken = await checkAccessToken(userId);
     const userProfile = await spotifyClient.user.getUserProfile(accessToken);

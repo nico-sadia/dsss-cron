@@ -4,6 +4,7 @@ import {
     fetchSavedPlaylist,
     fetchTopSongSummaries,
     fetchTrack,
+    fetchTracks,
     fetchUserPlaylists,
     fetchUserProfile,
     updateSavedPlaylist as updateSavedPlaylistService,
@@ -50,6 +51,19 @@ export const getTrack = async (req: Request, res: Response) => {
     try {
         const track = await fetchTrack(req.session.user_id!, trackId);
         res.status(200).json(track);
+    } catch (err) {
+        res.status(500).json({
+            err: err,
+            message: "Failed to get track",
+        });
+    }
+};
+
+export const getTracks = async (req: Request, res: Response) => {
+    const { ids } = req.query;
+    try {
+        const tracks = await fetchTracks(req.session.user_id!, ids as string);
+        res.status(200).json(tracks);
     } catch (err) {
         res.status(500).json({
             err: err,
