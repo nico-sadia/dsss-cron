@@ -70,12 +70,10 @@ const insertNewTracks = async (
     //Get recently played tracks of current user from DB
     //Convert them to only the time they were played at for comparison
 
-    const dbTracks = await dbClient.getRecentlyPlayed(
-        userId,
-        startOfDay(new Date()),
-        endOfDay(new Date()),
-        timezone
-    );
+    const dbTracks = await dbClient.getListenHistoryInRange(userId, timezone, {
+        from: startOfDay(new Date()),
+        to: endOfDay(new Date()),
+    });
 
     baseLogger.debug(dbTracks);
 

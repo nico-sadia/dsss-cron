@@ -20,11 +20,37 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
-    getRecentlyPlayed: async (
+    getListenHistory: async (
         userId: string,
-        from: Date,
-        to: Date,
-        timezone: string
+        { limit, offset = 0 }: { limit?: number; offset?: number }
+    ) => {
+        return await db
+            .manyOrNone(
+                `SELECT 
+                    song_uri,
+                    user_id, 
+                    played_at
+                FROM 
+                    listen_history 
+                WHERE 
+                    user_id = $1 
+                ORDER BY played_at DESC
+                LIMIT $2 OFFSET $3
+                `,
+                [userId, limit, offset]
+            )
+            .catch(handleDbError);
+    },
+
+    getListenHistoryInRange: async (
+        userId: string,
+        timezone: string,
+        {
+            from,
+            to,
+            limit,
+            offset = 0,
+        }: { from?: Date; to?: Date; limit?: number; offset?: number }
     ) => {
         return await db
             .manyOrNone(
@@ -40,11 +66,10 @@ export const dbClient = {
                     played_at >= ($2 AT TIME ZONE $4) AT TIME ZONE 'UTC'
                 AND 
                     played_at < ($3 AT TIME ZONE $4) AT TIME ZONE 'UTC'
+                ORDER BY played_at DESC
+                LIMIT $5 OFFSET $6
                 `,
-                [userId, from, to, timezone]
-                // (row) => {
-                //     row.played_at = row.played_at.toISOString();
-                // }
+                [userId, from, to, timezone, limit, offset]
             )
             .catch(handleDbError);
     },
@@ -96,11 +121,13 @@ export const dbClient = {
 
     getTopSongSummariesInRange: async (
         userId: string,
-        from: Date,
-        to: Date,
         timezone: string,
-        limit: number,
-        offset: number
+        {
+            from,
+            to,
+            limit = 50,
+            offset = 0,
+        }: { from?: Date; to?: Date; limit?: number; offset?: number }
     ) => {
         return await db
             .manyOrNone(
@@ -124,8 +151,7 @@ export const dbClient = {
 
     getTopSongSummaries: async (
         userId: string,
-        limit: number,
-        offset: number
+        { limit = 50, offset = 0 }: { limit?: number; offset?: number }
     ) => {
         return await db
             .manyOrNone(

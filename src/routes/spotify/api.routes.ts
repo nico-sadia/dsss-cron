@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    getListenHistory,
     getSavedPlaylist,
     getTopSongSummaries,
     getTrack,
@@ -18,6 +19,7 @@ spotifyApiRouter.get("/user-profile", getUserProfile);
 spotifyApiRouter.get("/user-playlists", getUserPlaylists);
 spotifyApiRouter.get("/saved-playlist", getSavedPlaylist);
 spotifyApiRouter.get("/top-song-summaries", getTopSongSummaries);
+spotifyApiRouter.get("/listen-history", getListenHistory);
 spotifyApiRouter.get("/tracks/:trackId", getTrack);
 spotifyApiRouter.patch("/saved-playlist", updateSavedPlaylist);
 

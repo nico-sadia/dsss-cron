@@ -48,11 +48,13 @@ const processUser = async (user: SpotifyUser) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const dbRecentlyPlayed = await dbClient.getRecentlyPlayed(
+    const dbRecentlyPlayed = await dbClient.getListenHistoryInRange(
         user.user_id,
-        startOfDay(yesterday),
-        endOfDay(yesterday),
-        user.timezone
+        user.timezone,
+        {
+            from: startOfDay(yesterday),
+            to: endOfDay(yesterday),
+        }
     );
 
     if (dbRecentlyPlayed.length === 0) {
@@ -70,7 +72,7 @@ const processUser = async (user: SpotifyUser) => {
     //Increment to count if present
     //Add name of track and count to array
     dbRecentlyPlayed.forEach((trackName: TrackDB) => {
-        let count = 1;
+        let count = 0;
         const currentURI = trackName.song_uri;
 
         if (

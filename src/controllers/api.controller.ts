@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+    fetchListenHistory,
     fetchSavedPlaylist,
     fetchTopSongSummaries,
     fetchTrack,
@@ -7,7 +8,6 @@ import {
     fetchUserProfile,
     updateSavedPlaylist as updateSavedPlaylistService,
 } from "../services/api.service";
-import { baseLogger } from "../utils/logger";
 
 export const getUserProfile = async (req: Request, res: Response) => {
     try {
@@ -64,18 +64,35 @@ export const getTopSongSummaries = async (req: Request, res: Response) => {
         const topSongSummaries = await fetchTopSongSummaries(
             req.session.user_id!,
             {
-                from: new Date(from as string),
-                to: new Date(to as string),
-                limit: Number(limit),
-                offset: Number(offset),
+                from: from ? new Date(from as string) : undefined,
+                to: to ? new Date(to as string) : undefined,
+                limit: limit ? Number(limit) : undefined,
+                offset: offset ? Number(offset) : undefined,
             }
         );
-        baseLogger.debug(topSongSummaries);
         res.status(200).json(topSongSummaries);
     } catch (err) {
         res.status(500).json({
             err: err,
             message: "Failed to get top song summaries",
+        });
+    }
+};
+
+export const getListenHistory = async (req: Request, res: Response) => {
+    const { from, to, limit, offset } = req.query;
+    try {
+        const listenHistory = await fetchListenHistory(req.session.user_id!, {
+            from: from ? new Date(from as string) : undefined,
+            to: to ? new Date(to as string) : undefined,
+            limit: limit ? Number(limit) : undefined,
+            offset: offset ? Number(offset) : undefined,
+        });
+        res.status(200).json(listenHistory);
+    } catch (err) {
+        res.status(500).json({
+            err: err,
+            message: "Failed to get listen history",
         });
     }
 };

@@ -59,15 +59,51 @@ export const fetchTopSongSummaries = async (
     if (from && to) {
         return await dbClient.getTopSongSummariesInRange(
             userId,
-            from,
-            to,
             user.timezone,
-            limit,
-            offset
+            {
+                from: from,
+                to: to,
+                limit: limit,
+                offset: offset,
+            }
         );
     }
 
-    return await dbClient.getTopSongSummaries(userId, limit, offset);
+    return await dbClient.getTopSongSummaries(userId, {
+        limit: limit,
+        offset: offset,
+    });
+};
+
+export const fetchListenHistory = async (
+    userId: string,
+    {
+        from,
+        to,
+        limit,
+        offset = 0,
+    }: { from?: Date; to?: Date; limit?: number; offset?: number }
+) => {
+    const user = await dbClient.getSpotifyUserFromUserId(userId);
+
+    if (!user) {
+        baseLogger.error("API: User does not exist");
+        throw new Error("User does not exist");
+    }
+
+    if (from && to) {
+        return await dbClient.getListenHistoryInRange(userId, user.timezone, {
+            from: from,
+            to: to,
+            limit: limit,
+            offset: offset,
+        });
+    }
+
+    return await dbClient.getListenHistory(userId, {
+        limit: limit,
+        offset: offset,
+    });
 };
 
 export const updateSavedPlaylist = async (
