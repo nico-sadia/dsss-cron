@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "nodemon ./src/index.ts",
-        "build": "rimraf dist && npm ci && npx tsc --build",
+        "build": "rimraf dist && rm -rf node_modules/.cache && npm ci && npx tsc --build",
         "start": "node ./dist/index.js"
     },
     "keywords": [],
