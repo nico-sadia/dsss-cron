@@ -19,7 +19,7 @@ export const playlist = {
         trackUri: string
     ) => {
         const data = await spotifyRequest({
-            url: PLAYLIST_URL + `${playlistId}` + "/tracks",
+            url: PLAYLIST_URL + `/${playlistId}` + "/tracks",
             payload: {
                 method: "POST",
                 body: JSON.stringify({ uris: [trackUri] }),
