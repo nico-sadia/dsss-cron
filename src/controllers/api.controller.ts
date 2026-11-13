@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { sendApiError } from "./apiError";
 import {
     fetchListenHistory,
     fetchSavedPlaylist,
@@ -15,10 +16,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
         const userProfile = await fetchUserProfile(req.session.user_id!);
         res.status(200).json(userProfile);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get user profile",
-        });
+        return sendApiError(res, err, "Failed to get user profile");
     }
 };
 
@@ -27,10 +25,7 @@ export const getUserPlaylists = async (req: Request, res: Response) => {
         const userPlaylists = await fetchUserPlaylists(req.session.user_id!);
         res.status(200).json(userPlaylists);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get user playlists",
-        });
+        return sendApiError(res, err, "Failed to get user playlists");
     }
 };
 
@@ -39,10 +34,7 @@ export const getSavedPlaylist = async (req: Request, res: Response) => {
         const savedPlaylist = await fetchSavedPlaylist(req.session.user_id!);
         res.status(200).json(savedPlaylist);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get saved playlist",
-        });
+        return sendApiError(res, err, "Failed to get saved playlist");
     }
 };
 
@@ -52,10 +44,7 @@ export const getTrack = async (req: Request, res: Response) => {
         const track = await fetchTrack(req.session.user_id!, trackId);
         res.status(200).json(track);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get track",
-        });
+        return sendApiError(res, err, "Failed to get track");
     }
 };
 
@@ -65,10 +54,7 @@ export const getTracks = async (req: Request, res: Response) => {
         const tracks = await fetchTracks(req.session.user_id!, ids as string);
         res.status(200).json(tracks);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get track",
-        });
+        return sendApiError(res, err, "Failed to get track");
     }
 };
 
@@ -86,10 +72,7 @@ export const getTopSongSummaries = async (req: Request, res: Response) => {
         );
         res.status(200).json(topSongSummaries);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get top song summaries",
-        });
+        return sendApiError(res, err, "Failed to get top song summaries");
     }
 };
 
@@ -104,10 +87,7 @@ export const getListenHistory = async (req: Request, res: Response) => {
         });
         res.status(200).json(listenHistory);
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to get listen history",
-        });
+        return sendApiError(res, err, "Failed to get listen history");
     }
 };
 
@@ -121,9 +101,6 @@ export const updateSavedPlaylist = async (req: Request, res: Response) => {
             message: "Saved playlist updated successfully",
         });
     } catch (err) {
-        res.status(500).json({
-            err: err,
-            message: "Failed to update saved playlist",
-        });
+        return sendApiError(res, err, "Failed to update saved playlist");
     }
 };

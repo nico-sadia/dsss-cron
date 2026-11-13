@@ -1,0 +1,2 @@
+ALTER TABLE spotify_users
+ADD COLUMN IF NOT EXISTS spotify_reauth_required BOOLEAN NOT NULL DEFAULT FALSE;

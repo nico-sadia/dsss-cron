@@ -13,9 +13,12 @@ export const dbClient = {
         return await db
             .manyOrNone(
                 `SELECT 
-                    user_id, access_token, playlist_id, refresh_token, expires_at, timezone
+                    user_id, access_token, playlist_id, refresh_token, expires_at, timezone,
+                    spotify_reauth_required
                 FROM 
-                    spotify_users`
+                    spotify_users
+                WHERE
+                    spotify_reauth_required = FALSE`
             )
             .catch(handleDbError);
     },
@@ -108,7 +111,8 @@ export const dbClient = {
         return await db
             .oneOrNone<SpotifyUser>(
                 `SELECT 
-                    user_id, access_token, refresh_token, playlist_id, expires_at, timezone
+                    user_id, access_token, refresh_token, playlist_id, expires_at, timezone,
+                    spotify_reauth_required
                 FROM 
                     spotify_users
                 WHERE
@@ -195,16 +199,34 @@ export const dbClient = {
             .catch(handleDbError);
     },
 
-    updateAccessToken: async (userId: string, accessToken: string) => {
+    updateAccessToken: async (
+        userId: string,
+        accessToken: string,
+        expiresAt: number,
+        refreshToken?: string
+    ) => {
         await db
             .none(
-                `UPDATE 
+                `UPDATE
                     spotify_users
-                SET 
-                    access_token = $1, expires_at = $2
-                WHERE 
-                    user_id = $3`,
-                [accessToken, Date.now() + 3600 * 1000, userId]
+                SET
+                    access_token = $1,
+                    refresh_token = COALESCE($2, refresh_token),
+                    expires_at = $3
+                WHERE
+                    user_id = $4`,
+                [accessToken, refreshToken ?? null, expiresAt, userId]
+            )
+            .catch(handleDbError);
+    },
+
+    markSpotifyReauthRequired: async (userId: string) => {
+        await db
+            .none(
+                `UPDATE spotify_users
+                SET spotify_reauth_required = TRUE
+                WHERE user_id = $1`,
+                [userId]
             )
             .catch(handleDbError);
     },
@@ -212,22 +234,27 @@ export const dbClient = {
     upsertSpotifyUser: async (
         userId: string,
         accessToken: string,
-        refreshToken: string
+        refreshToken: string,
+        expiresAt: number
     ) => {
         await db
             .none(
-                `INSERT INTO 
-                    spotify_users (user_id, access_token, refresh_token, expires_at)
-                VALUES 
-                    ($1, $2, $3, $4)
-                ON CONFLICT 
+                `INSERT INTO
+                    spotify_users (
+                        user_id, access_token, refresh_token, expires_at,
+                        spotify_reauth_required
+                    )
+                VALUES
+                    ($1, $2, $3, $4, FALSE)
+                ON CONFLICT
                     (user_id)
                 DO UPDATE SET
                     access_token = EXCLUDED.access_token,
                     refresh_token = EXCLUDED.refresh_token,
-                    expires_at = $4,
+                    expires_at = EXCLUDED.expires_at,
+                    spotify_reauth_required = FALSE,
                     updated_at = now();`,
-                [userId, accessToken, refreshToken, 3600 * 1000]
+                [userId, accessToken, refreshToken, expiresAt]
             )
             .catch(handleDbError);
     },

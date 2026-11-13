@@ -21,7 +21,7 @@ export const handleSessionValidation = async (
 
 export const handleSpotifyAuthLogin = async (req: Request, res: Response) => {
     try {
-        const url = await initiateSpotifyAuth();
+        const url = await initiateSpotifyAuth(req);
         res.redirect(url);
         baseLogger.info("AUTH: Auth login complete");
     } catch (err) {
@@ -35,13 +35,23 @@ export const handleSpotifyAuthCallback = async (
     res: Response
 ) => {
     try {
-        const { code } = req.query;
-        if (!code) {
+        const { code, state } = req.query;
+        if (
+            typeof state !== "string" ||
+            !req.session.oauth_state ||
+            state !== req.session.oauth_state
+        ) {
+            baseLogger.warn("AUTH: Callback rejected due to invalid state");
+            return res.status(400).send("Invalid OAuth state");
+        }
+        delete req.session.oauth_state;
+
+        if (typeof code !== "string") {
             baseLogger.error("AUTH: Auth callback failed - missing code");
             return res.status(400).send("Missing code");
         }
 
-        await handleAuthCallback(req, code as string);
+        await handleAuthCallback(req, code);
         baseLogger.info("AUTH: Auth callback complete");
         res.redirect(process.env.FRONTEND_URL!);
     } catch (err) {

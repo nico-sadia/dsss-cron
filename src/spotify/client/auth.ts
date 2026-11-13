@@ -1,15 +1,14 @@
 import querystring from "querystring";
 import { AUTH_TOKEN_URL } from "../../lib";
-import { generateRandomString } from "../../utils/helpers";
 import { handleSpotifyError } from "../error";
+import { SpotifyTokenResponse } from "../types";
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 
 export const auth = {
-    getAuthonizationUrl: async () => {
-        const state = generateRandomString(16);
+    getAuthorizationUrl: async (state: string) => {
         const scope =
             "user-read-private user-read-email user-top-read user-read-recently-played playlist-modify-public playlist-modify-private playlist-read-collaborative";
 
@@ -20,11 +19,11 @@ export const auth = {
                 client_id: client_id,
                 scope: scope,
                 redirect_uri: redirect_uri,
-                state: state,
+                state,
             })
         );
     },
-    getAuthTokens: async (code: string) => {
+    getAuthTokens: async (code: string): Promise<SpotifyTokenResponse> => {
         const authOptions = {
             method: "POST",
             headers: {
@@ -49,10 +48,12 @@ export const auth = {
         );
 
         if (!res.ok) await handleSpotifyError(res);
-        return res.json(); // { access_token, refresh_token, expires_in }
+        return (await res.json()) as SpotifyTokenResponse;
     },
 
-    getRefreshToken: async (refresh_token: string) => {
+    getRefreshToken: async (
+        refresh_token: string
+    ): Promise<SpotifyTokenResponse> => {
         const payload = {
             method: "POST",
             headers: {
@@ -71,7 +72,6 @@ export const auth = {
 
         const res = await fetch(AUTH_TOKEN_URL, payload);
         if (!res.ok) await handleSpotifyError(res);
-        const data = await res.json();
-        return data.access_token;
+        return (await res.json()) as SpotifyTokenResponse;
     },
 };

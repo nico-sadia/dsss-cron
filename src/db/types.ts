@@ -23,4 +23,5 @@ export type SpotifyUser = {
     playlist_id: string | null;
     expires_at: number;
     timezone: string;
+    spotify_reauth_required: boolean;
 };
