@@ -1,4 +1,4 @@
-# Daily Spotify Song Saver — Backend
+# Daily Spotify Song Saver - Backend
 
 The Express.js and TypeScript backend for Daily Spotify Song Saver, a project that saves a user's most-played track from the previous day to a selected Spotify playlist.
 
