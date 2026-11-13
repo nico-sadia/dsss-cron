@@ -1,3 +1,17 @@
-# Daily Spotify Song Saver (cron job service)
+# Daily Spotify Song Saver — Backend
 
-- This is an automated Node.js + Typescript service that connects to the Spotify API to fetch a user's recently played tracks and then saves them to a [Supabase](https://supabase.com/) PostgreSQL database. It uses [cron-job.org](https://cron-job.org/en/) to hit endpoints hosted on an Express server hosted by [Render](https://render.com/).
+The Express.js and TypeScript backend for Daily Spotify Song Saver, a project that saves a user's most-played track from the previous day to a selected Spotify playlist.
+
+## How it works
+
+- Handles Spotify API requests and OAuth token management.
+- Stores user and listening data in Supabase PostgreSQL, and refreshes expired access tokens.
+- Receives scheduled requests from cron-job.org, collects recent plays, identifies the most-played track and adds it to the user's selected playlist.
+
+## Technologies
+
+TypeScript · Node.js · Express.js · Spotify Web API · Supabase · PostgreSQL
+
+## Project status
+
+This was built as a personal project. Its current availability may be affected by Spotify's developer access requirements.
